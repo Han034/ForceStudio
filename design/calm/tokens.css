@@ -1,0 +1,100 @@
+/* calm-ui tokens - copy this file into a project (or @import it) and build on the variables.
+   Themes: [data-calm="mono"] (default, near-black), [data-calm="light"], [data-calm="tint"] (one hue family: set --hue).
+   Components that use these: reference/components.css. Nothing here is brand-specific except --hue and --c-brand. */
+
+:root,
+[data-calm="mono"] {
+  /* surfaces: separated by tone, never by borders */
+  --c-page: #050506;
+  --c-surface: #0f0f11;          /* a card */
+  --c-raised: #19191c;           /* a control, a card inside a card */
+  --c-sunken: #0a0a0b;           /* a well, a track */
+  --c-line: rgba(255, 255, 255, .07);   /* hairlines inside lists only */
+  /* ink: three steps, nothing else */
+  --c-page-ink: #f4f4f3;          /* text placed straight on the page (greeting, section titles outside cards) */
+  --c-ink: #f4f4f3;
+  --c-ink-2: rgba(244, 244, 243, .6);
+  --c-ink-3: rgba(244, 244, 243, .36);
+  /* the selected pill / primary action: inverted, flat */
+  --c-accent: #f4f4f3;
+  --c-on-accent: #0b0b0c;
+  /* colour only when it means something */
+  --c-pos: #3ddc84;              /* money in, done, live */
+  --c-neg: #ff5c5c;              /* money out, destructive, error */
+  --c-warn: #f5b84b;
+  --c-brand: #7b61ff;            /* the product's own mark - an icon, a dot; never large areas */
+  --c-bar: rgba(244, 244, 243, .22);   /* chart bars; the latest one uses --c-ink */
+}
+
+[data-calm="light"] {
+  --c-page: #ececea;
+  --c-surface: #fafaf9;
+  --c-raised: #ffffff;
+  --c-sunken: #f0f0ee;
+  --c-line: rgba(10, 10, 12, .08);
+  --c-page-ink: #111113;
+  --c-ink: #111113;
+  --c-ink-2: rgba(17, 17, 19, .6);
+  --c-ink-3: rgba(17, 17, 19, .38);
+  --c-accent: #111113;
+  --c-on-accent: #fafaf9;
+  --c-pos: #13a45b;
+  --c-neg: #d9363e;
+  --c-warn: #b7791f;
+  --c-bar: rgba(17, 17, 19, .16);
+}
+
+/* one hue family: page, panel, cards and accent are all the same hue at different lightness.
+   --hue is the brand hue in degrees (0-360): 15 = the maroon reference, 250 = indigo, 150 = green, 60 = amber. */
+[data-calm="tint"] {
+  --hue: 15;
+  --c-page: oklch(0.9 0.035 var(--hue));
+  --c-surface: oklch(0.3 0.07 var(--hue));
+  --c-raised: oklch(0.37 0.085 var(--hue));
+  --c-sunken: oklch(0.25 0.06 var(--hue));
+  --c-line: oklch(1 0 0 / .07);
+  --c-page-ink: oklch(0.3 0.07 var(--hue));   /* the page is light in this theme, so text on it is dark */
+  --c-ink: oklch(0.97 0.012 var(--hue));
+  --c-ink-2: oklch(0.97 0.012 var(--hue) / .64);
+  --c-ink-3: oklch(0.97 0.012 var(--hue) / .4);
+  --c-accent: oklch(0.97 0.012 var(--hue));
+  --c-on-accent: oklch(0.28 0.07 var(--hue));
+  --c-pos: oklch(0.8 0.15 150);
+  --c-neg: oklch(0.7 0.18 25);
+  --c-warn: oklch(0.83 0.13 80);
+  --c-brand: oklch(0.7 0.16 var(--hue));
+  --c-bar: oklch(0.97 0.012 var(--hue) / .22);
+}
+
+:root {
+  /* shape: large radii, nested radius = outer radius - padding */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 24px;
+  --r-xl: 32px;
+  --r-pill: 999px;
+
+  /* spacing: 4px grid */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px;
+
+  /* type: one family, contrast comes from size and weight, not from many fonts */
+  --f-sans: "Inter", "SF Pro Display", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", "SF Mono", ui-monospace, Consolas, monospace;
+  --t-hero: clamp(40px, 5.2vw, 64px);   /* the one number of a card */
+  --t-title: 22px;
+  --t-head: 15px;                       /* card and list titles */
+  --t-body: 14px;
+  --t-meta: 12px;                       /* "4m ago", "93 paid orders" */
+  --t-label: 10.5px;                    /* UPPERCASE stat labels */
+
+  /* motion: short and quiet */
+  --m-fast: 120ms;
+  --m-base: 200ms;
+  --m-slide: 280ms;                               /* a pill thumb or a switch knob moving to its new place */
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --ease-spring: cubic-bezier(.3, 1.25, .45, 1);   /* a small overshoot for things that move sideways; never bouncy */
+
+  /* elevation: only for things that float over other content (a widget over a wallpaper, a dock, a dialog) */
+  --e-float: 0 30px 60px -28px rgba(0, 0, 0, .65), 0 2px 6px rgba(0, 0, 0, .25);
+}

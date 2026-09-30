@@ -1,0 +1,1054 @@
+<title>Force Studio</title>
+<script>document.documentElement.dataset.calm = 'tint'; document.documentElement.style.setProperty('--hue', '350');   /* from the logo's plum end; the logo keeps its own gradient */ document.documentElement.lang = 'tr';</script>
+<link rel="icon" type="image/png" href="assets/force-mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/*@css*/
+
+/* ================= Force Studio client (Windows) - built only from calm-ui tokens ================= */
+:root { color-scheme: dark; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--c-page); color: var(--c-page-ink); font: 400 var(--t-body)/1.45 var(--f-sans); -webkit-font-smoothing: antialiased; display: grid; place-items: center; padding: var(--s-6) var(--s-4); box-sizing: border-box; overflow-x: hidden; }
+button { font-family: inherit; }
+
+/* the window floats over the wallpaper: the only --e-float surface */
+.win { width: min(1320px, 100%); height: min(860px, 100%); min-height: 640px; display: grid; grid-template-rows: 40px minmax(0, 1fr);
+  background: var(--c-sunken); color: var(--c-ink); border-radius: var(--r-xl); box-shadow: var(--e-float); overflow: hidden; }
+
+/* title bar: drag region + Windows caption buttons */
+.tbar { display: flex; align-items: center; gap: var(--s-2); padding-left: var(--s-5); -webkit-app-region: drag; user-select: none; }
+.tbar .brand { display: flex; align-items: center; gap: var(--s-2); font: 700 13px var(--f-sans); letter-spacing: -.01em; }
+.tbar .ver { color: var(--c-ink-3); font-size: var(--t-meta); }
+.caps { margin-left: auto; display: flex; height: 100%; -webkit-app-region: no-drag; }
+.caps button { width: 46px; height: 100%; border: 0; background: transparent; color: var(--c-ink-2); display: grid; place-items: center; cursor: pointer; transition: background var(--m-fast) var(--ease), color var(--m-fast) var(--ease); }
+.caps button:hover { background: var(--c-surface); color: var(--c-ink); }
+.caps button.is-close:hover { background: var(--c-neg); color: var(--c-ink); }
+.caps .cu-i { width: 14px; height: 14px; --cu-i-w: 1.6; }
+
+/* body: rail | view | people rails */
+.body { display: grid; grid-template-rows: minmax(0, 1fr); grid-template-columns: 64px minmax(0, 1fr) 64px; gap: var(--s-4); padding: 0 var(--s-4) var(--s-4); min-height: 0; }
+.cu-rail { justify-content: flex-start; }
+.cu-rail .sp { flex: 1; }
+.cu-rail .logo { display: grid; place-items: center; width: 40px; height: 44px; margin-bottom: var(--s-2); }
+.cu-rail .logo img { height: 27px; width: auto; display: block; }
+.cu-rail a[aria-current="page"] { background: var(--c-accent); color: var(--c-on-accent); }
+.cu-rail .dl-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--c-pos); box-shadow: 0 0 0 2px var(--c-surface); }
+.cu-rail a { position: relative; }
+.cu-rail [data-cu-tip]:hover::after { left: calc(100% + 10px); bottom: auto; top: 50%; transform: translateY(-50%); }
+.rcol [data-cu-tip]:hover::after { left: auto; right: calc(100% + 10px); bottom: auto; top: 50%; transform: translateY(-50%); }
+
+/* right: profile + friends (top strip), groups (bottom strip) */
+.rcol { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: var(--s-4); min-height: 0; }
+.rcol .cu-rail { gap: var(--s-3); padding-block: var(--s-4); }
+/* friends strip: hugs its content when everyone fits; when the list is cut, the leftover (< one avatar) is spread evenly so the strip ends flush */
+.rcol #friends { align-self: start; }
+.rcol #friends.is-full { align-self: stretch; justify-content: space-between; }
+.rcol .who { position: relative; width: 40px; height: 40px; flex: none; border: 0; padding: 0; border-radius: 50%; cursor: pointer; display: grid; place-items: center;
+  background: var(--art); color: var(--c-ink); font: 700 13px var(--f-sans); }
+.rcol .who.is-on::before, .rcol .who.is-away::before, .rcol .who.is-me::before {   /* ::before: ::after is the tooltip */ content: ""; position: absolute; right: 0; bottom: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--c-pos); box-shadow: 0 0 0 2px var(--c-surface); }
+.rcol .who.is-away::before { background: var(--c-warn); }
+.rcol .who.is-me.is-off::before { background: var(--c-ink-3); }
+.rcol .who.is-off { color: var(--c-ink-2); }
+.rcol .who.is-me { width: 44px; height: 44px; font-size: 15px; background: var(--c-accent); color: var(--c-on-accent); }
+.rcol .grp { border-radius: 14px; font-size: 12px; }
+.rcol .who:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
+.rcol .n { position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box; border-radius: var(--r-pill); background: var(--c-accent); color: var(--c-on-accent); font: 700 10px/16px var(--f-sans); text-align: center; box-shadow: 0 0 0 2px var(--c-surface); }
+.rcol .who.add { background: var(--c-raised); color: var(--c-ink-2); }
+.rcol .who.add:hover { color: var(--c-ink); background: var(--c-sunken); }
+.rcol .who.add .cu-i { width: 18px; height: 18px; }
+.rcol hr { width: 24px; flex: none; border: 0; height: 1px; background: var(--c-line); margin: 0; }
+.rcol .rh { color: var(--c-ink-3); display: grid; place-items: center; height: 24px; }
+.rcol .rh .cu-i { width: 18px; height: 18px; }
+
+/* app art: one hue family, lightness steps only */
+.art-1 { --art: oklch(0.52 0.12 var(--hue)); } .art-2 { --art: oklch(0.44 0.1 var(--hue)); } .art-3 { --art: oklch(0.6 0.12 var(--hue)); }
+.art-4 { --art: oklch(0.38 0.09 var(--hue)); } .art-5 { --art: oklch(0.68 0.1 var(--hue)); } .art-6 { --art: oklch(0.48 0.13 calc(var(--hue) + 12)); }
+
+/* views */
+.view { min-height: 0; overflow: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: var(--c-raised) transparent; padding-right: 2px; }
+.view[hidden], .cu-toast[hidden] { display: none; }
+.home { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--s-4); align-content: start;
+  /* one grid for both columns, so the section heads of the two sides share a row and always line up */
+  grid-template-areas: "top top" "feat upd" "apph stath" "shelf stat" "dlh stat" "dl stat"; }
+.home > .col { display: contents; }
+.home > .col > * { min-width: 0; }
+.a-feat { grid-area: feat; } .a-upd { grid-area: upd; } .a-apph { grid-area: apph; } .a-stath { grid-area: stath; }
+.a-shelf { grid-area: shelf; } .a-stat { grid-area: stat; } .a-dlh { grid-area: dlh; } .a-dl { grid-area: dl; }
+.home > .top { grid-area: top; position: relative; z-index: 2; margin-bottom: calc(var(--s-2) - var(--s-4)); }
+.col { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-4); align-content: start; min-width: 0; }   /* minmax(0): the scrolling shelf must not widen the column */
+
+.top { display: flex; align-items: center; gap: var(--s-3); min-height: 44px; }
+.top .greet { font: 500 22px/1.2 var(--f-sans); letter-spacing: -.01em; color: var(--c-ink-3); white-space: nowrap; }
+.top .greet b { color: var(--c-ink); font-weight: 700; text-transform: uppercase; }
+.top .cu-search { flex: 0 1 260px; margin-left: auto; }
+/* the statistic card takes the height the left column gives it (contain: size), the ring scales into what is left */
+.home .statc { contain: size; grid-template-rows: minmax(0, 1fr) auto; align-content: stretch; }
+.home .blob { width: auto; height: 100%; max-height: 248px; min-height: 0; align-self: center; }
+.top .icons { display: flex; gap: var(--s-2); }
+.top .me-sm { display: none; background: var(--c-accent); color: var(--c-on-accent); font: 700 13px var(--f-sans); }
+.top .cu-input { background: var(--c-surface); border-radius: var(--r-pill); }
+
+/* feature: the picture is the hero; art rises out of the card */
+.cu-feature { background: none; min-height: 236px; isolation: isolate; --bg-end: 16%; }
+/* the colour ends behind the character; the character itself is the card's right end (reference) */
+.cu-feature::before { content: ""; position: absolute; inset: 0 var(--bg-end) 0 0; z-index: -1; border-radius: var(--r-lg) 0 0 var(--r-lg); background: var(--c-feature-fill); }   /* square right end: it sits under the character */
+.cu-feature.bg-round::before { border-radius: var(--r-lg); }
+.cu-feature .cu-cutout { --ov: var(--art-ov, 0px); height: calc(100% + 44px + var(--ov)); bottom: calc(-1 * var(--ov)); clip-path: inset(0 0 var(--ov) 0); width: auto; max-width: 50%;   /* rises a fixed 44px: stays inside the top-bar row, never clipped by the scrolling view */ right: 0; object-fit: contain; object-position: bottom right; }
+.cu-feature .hero-t { font: 800 clamp(38px, 4.4vw, 54px)/1 var(--f-sans); letter-spacing: -.04em; margin: 0; text-wrap: balance; }
+.cu-feature .cu-meta, .cu-feature .cu-btn.is-ghost { color: color-mix(in oklab, var(--c-ink) 86%, transparent); }   /* the vivid fill needs brighter meta to keep >= 3:1 */
+.cu-feature .row { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
+.cu-feature .cu-actions { margin-top: var(--s-2); }
+/* carousel: the body slides out and the next one slides in; the bars at the top right show which one and how long it stays */
+.cu-feature { --feat-ms: 7s; }
+.cu-feature .fbody { display: grid; gap: var(--s-2); justify-items: start; }
+.cu-feature .fbody.is-out { animation: feat-out 600ms cubic-bezier(.4, 0, .6, 1) forwards; }   /* animations, not transitions: they start from whatever the last one left */
+.cu-feature .fbody.is-in { animation: feat-in 900ms var(--ease) both; }
+.cu-feature .cu-cutout.is-out { animation: art-out 600ms cubic-bezier(.4, 0, .6, 1) forwards; }
+.cu-feature .cu-cutout.is-in { animation: art-in 1000ms var(--ease) both; }
+/* the colour card only fades (no move: its square right end is hidden by the character, any offset would expose it); it goes before the character thins out and returns once the character is mostly back */
+.cu-feature.bg-out::before { animation: bg-out 350ms ease-in forwards; }
+.cu-feature.bg-in::before { animation: bg-in 700ms ease-out 250ms both; }
+@keyframes bg-out { to { opacity: 0; } }
+@keyframes bg-in { from { opacity: 0; } }
+@keyframes art-out { to { opacity: 0; transform: translateY(14px) scale(.97); } }
+@keyframes art-in { from { opacity: 0; transform: translateY(18px) scale(.97); } }
+@property --bg-end { syntax: "<length-percentage>"; inherits: true;   /* ::before reads it from the card */ initial-value: 16%; }
+@keyframes feat-out { to { opacity: 0; transform: translateX(-18px); } }
+@keyframes feat-in { from { opacity: 0; transform: translateX(28px); } }
+.cu-feature > .fdots { position: absolute; top: 0; right: var(--s-2); max-width: none; z-index: 1; display: flex; gap: 5px; }   /* the empty corner right of the character's head (reference) */
+.fdots button { position: relative; width: 7px; height: 23px; padding: 8px 0; border: 0; box-sizing: border-box; border-radius: var(--r-pill); background: color-mix(in oklab, var(--c-ink) 45%, transparent); background-clip: content-box;
+  cursor: pointer; }
+.fdots button[aria-selected="true"] { width: 30px; }
+.fdots.is-sm { gap: 4px; } .fdots.is-sm button { width: 7px; } .fdots.is-sm button[aria-selected="true"] { width: 20px; }
+.fdots.is-xs { gap: 3px; } .fdots.is-xs button { width: 7px; } .fdots.is-xs button[aria-selected="true"] { width: 16px; }
+.fdots button::after { content: ""; position: absolute; inset: 8px 0; border-radius: inherit; background: var(--c-ink); transform: scaleX(0); transform-origin: left; }
+.fdots button[aria-selected="true"]::after { animation: feat-time var(--feat-ms) linear forwards; }
+#feature:hover .fdots button::after, #feature:focus-within .fdots button::after { animation-play-state: paused; }
+@keyframes feat-time { to { transform: scaleX(1); } }
+.fdots button:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
+
+.sec-h { display: flex; align-items: center; justify-content: space-between; margin: var(--s-2) 0 calc(var(--s-3) * -1 + var(--s-2)); }
+.sec-h .cu-head { font-size: 17px; font-weight: 700; }
+.sec-h a { color: var(--c-ink-3); font-size: var(--t-meta); text-decoration: none; font-weight: 600; } .sec-h a:hover { color: var(--c-ink); }
+
+/* my apps: a shelf of square cards; the card cut by the edge is faded and carries the round "next" button (reference) */
+.shelf { position: relative; --th: 224px; }
+.tiles { display: grid; grid-auto-flow: column; grid-auto-columns: var(--th); gap: var(--s-4); overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory; scroll-behavior: smooth; overscroll-behavior-x: contain; }
+.tiles::-webkit-scrollbar { display: none; }
+.tile { position: relative; width: var(--th); height: var(--th); scroll-snap-align: start; border-radius: var(--r-lg); overflow: hidden; background: var(--art); border: 0; padding: 0; cursor: pointer;
+  color: var(--c-ink); text-align: left; transition: opacity var(--m-base) var(--ease), transform var(--m-base) var(--ease); }
+.tile:hover { transform: translateY(-2px); }
+.tile:focus-visible { outline: 2px solid var(--c-ink); outline-offset: -2px; }
+.tile.is-peek { opacity: .3; }
+.tile.is-peek:hover { transform: none; }
+.tile.has-img { background: var(--tile-bg); color: var(--tile-ink); }   /* the artwork's own ground; title colour chosen per artwork */
+.tile.has-img .cu-dot { color: var(--tile-ink); }
+.tile .tphoto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }   /* art files are prepared with the subject high and a clear band for the title */
+.aimg { display: block; width: 100%; height: 100%; object-fit: cover; }
+.lcard .art.has-img { background: var(--tile-bg); }
+.lcard .art.has-img .cu-dot { color: var(--tile-ink); }
+.lcard .art .aimg.contain { position: absolute; inset: 0; object-fit: contain; }
+.tops .ci, .dlc .dtile { overflow: hidden; }
+.tile .tart { position: absolute; inset: 0; width: 100%; height: 100%; }
+.tile .tart .topo { fill: none; stroke: var(--c-ink); stroke-opacity: .14; stroke-width: .35; }
+.tile .tart .marks { fill: none; stroke: var(--c-ink); stroke-opacity: .5; stroke-width: .7; stroke-linecap: round; stroke-linejoin: round; }
+.tile .hero { position: absolute; right: 11%; top: 24%; width: 44%; height: auto; aspect-ratio: 1; color: var(--c-accent); --cu-i-w: 1.5; }
+.tile .tt { position: absolute; left: var(--s-5); right: var(--s-5); bottom: var(--s-5); font: 700 20px/1.35 var(--f-sans); letter-spacing: -.01em;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tile .cu-dot { position: absolute; right: var(--s-4); top: var(--s-4); font-size: var(--t-meta); color: var(--c-ink); }
+.shelf-next { position: absolute; right: var(--s-6); top: 50%; transform: translateY(-50%); width: 52px; height: 52px; border: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+  background: var(--c-accent); color: var(--c-on-accent); box-shadow: var(--e-float); transition: transform var(--m-fast) var(--ease); }
+.shelf-next:hover { transform: translateY(-50%) scale(1.06); }
+.shelf-next:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
+.shelf-next[hidden] { display: none; }
+.shelf-next.is-start { right: auto; left: var(--s-6); }   /* at the end the faded cards are on the left */
+.shelf-next .cu-i { width: 22px; height: 22px; --cu-i-w: 2.5; }
+
+/* active download: the coloured part grows with progress and ends in a wave (reference "Last Downloads") */
+.dlc { position: relative; overflow: hidden; display: grid; grid-template-columns: 72px minmax(0, 1fr) auto auto; align-items: center; gap: var(--s-5);
+  min-height: 104px; box-sizing: border-box; padding: var(--s-4) var(--s-5) var(--s-4) var(--s-4); background: var(--c-dl-rest); border-radius: var(--r-lg); color: var(--c-ink); }
+.dlc > :not(.fill) { position: relative; }
+.dlc .fill { position: absolute; inset: 0 auto 0 0; width: var(--w); background: var(--c-dl-fill); transition: width var(--m-base) var(--ease); }
+.dlc .wave { position: absolute; left: calc(100% - 1px); top: 0; width: 84px; height: 100%; overflow: visible; }
+.dlc .wf { fill: var(--c-dl-edge); }   /* same colour as the fill's right end: the wave continues it */
+.dlc .wl { fill: none; stroke: var(--c-ink); stroke-opacity: .16; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.dlc .dtile { width: 72px; height: 72px; border-radius: var(--r-md); display: grid; place-items: center; background: var(--c-accent); color: var(--c-on-accent); }
+.dlc .dtile .cu-i { width: 30px; height: 30px; }
+.dlc .nm { display: grid; gap: var(--s-2); justify-items: start; min-width: 0; }
+.dlc .nm b { font: 700 20px var(--f-sans); letter-spacing: -.02em; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dlc .nm .cu-chip { background: var(--c-sunken); font-size: 12px; padding: 5px 12px; }
+.dlc .tm { display: grid; gap: 4px; text-align: right; }
+.dlc .tm b { font: 600 16px var(--f-sans); font-variant-numeric: tabular-nums; }
+.dlc .tm span { font: 600 13px var(--f-sans); color: color-mix(in oklab, var(--c-ink) 62%, transparent); font-variant-numeric: tabular-nums; }
+.dlc .btns { display: flex; gap: var(--s-3); }
+.dlc .cb { width: 40px; height: 40px; border-radius: 50%; border: 0; padding: 0; display: grid; place-items: center; cursor: pointer; transition: transform var(--m-fast) var(--ease); }
+.dlc .cb:hover { transform: scale(1.06); }
+.dlc .cb:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
+.dlc .cb.pp { background: #d9473b; color: #fff; }   /* reference: a red play/pause circle, white icon */
+.dlc .cb.x { background: var(--c-accent); color: var(--c-neg); }
+.dlc .cb .cu-i { width: 16px; height: 16px; }
+.empty-dl { min-height: 104px; box-sizing: border-box; display: flex; align-items: center; gap: var(--s-3); color: var(--c-ink-2); font-size: var(--t-body); padding: var(--s-5) var(--s-6); }
+
+/* side: each update is its own small card, then the storage ring */
+.ucards { display: grid; gap: var(--s-3); }
+.ucard { background: var(--c-surface); border-radius: var(--r-lg); padding: var(--s-3); }
+.ucard .cu-row { grid-template-columns: 48px minmax(0, 1fr) auto; padding: 0; border: 0; }
+.ucard .cu-ico { width: 48px !important; height: 48px !important; border-radius: var(--r-sm) !important; background: var(--art) !important; color: var(--c-ink) !important; }
+.ucard .cu-ico .cu-i { width: 19px; height: 19px; }
+.ucard .vv { font-variant-numeric: tabular-nums; }
+.q .cu-ico { width: 40px !important; height: 40px !important; border-radius: 12px !important; background: var(--art) !important; color: var(--c-ink) !important; }
+.q .cu-ico .cu-i { width: 17px; height: 17px; }
+/* statistic: layered wavy ring in the logo's colours around the total, top three apps under it (reference "Your Statistic") */
+:root { --c-feature: #c83930;   /* vivid terracotta: the middle of the feature fill */
+  /* the reference card's gradient (dark top, warm bottom-left), saturation +0.2 so it reads as vivid on the darker plum ground (option A) */
+  --c-feature-fill: linear-gradient(195deg, #c3322b 0%, #c83930 38%, #cd493b 70%, #d3634e 100%);
+  /* download card (reference "Last Downloads"): the same vivid red, lighter at the left, and a dark warm maroon for the part still to come */
+  --c-dl-fill: linear-gradient(90deg, #d0584a 0%, #cb4336 45%, #c3322b 100%);
+  --c-dl-edge: #c3322b;
+  --c-dl-rest: #3e1a1f;
+  --st-1: #e5677a; --st-2: #f6e3b4; --st-3: #8b70e0; }   /* rose · cream · violet, from the Force logo */
+.statc { display: grid; justify-items: center; gap: var(--s-6); padding: var(--s-6) var(--s-5); }
+.blob { position: relative; width: 248px; aspect-ratio: 1; max-width: 100%; container-type: size; }
+.blob svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.blob .lay { transform-box: fill-box; transform-origin: center; fill: url(#stGrad); fill-opacity: .26; stroke: url(#stGrad); stroke-opacity: .55; stroke-width: .8; }
+.blob .core { fill: var(--c-sunken); }
+.blob .line { fill: none; stroke: var(--c-ink); stroke-opacity: .14; stroke-width: 1; }
+.blob .mid { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 2px; }
+.blob .mid span { font: 500 clamp(10.5px, 5.2cqw, 13px) var(--f-sans); color: var(--c-ink-3); }
+.blob .mid b { font: 700 clamp(17px, 11.5cqw, 30px)/1.1 var(--f-sans); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.tops { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-3); width: 100%; }
+.tops > div { display: grid; justify-items: center; gap: var(--s-2); }
+.tops .ci { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; }
+.tops .ci .cu-i { width: 24px; height: 24px; }
+/* entering the page: the rings unfold one after another, the total counts up, the top three pop in */
+.statc.is-in .lay { animation: blob-in 1.2s var(--ease-spring) calc(var(--j) * 80ms) both; }
+.statc.is-in .blob .core, .statc.is-in .blob .line { transform-box: fill-box; transform-origin: center; animation: blob-core .7s var(--ease) both; }
+.statc.is-in .tops > div { animation: tops-in .5s var(--ease-spring) both; }
+.statc.is-in .tops > div:nth-child(1) { animation-delay: .45s; } .statc.is-in .tops > div:nth-child(2) { animation-delay: .55s; } .statc.is-in .tops > div:nth-child(3) { animation-delay: .65s; }
+@keyframes blob-in { from { opacity: 0; transform: rotate(-60deg) scale(.7); } }
+@keyframes blob-core { from { transform: scale(.86); } }
+@keyframes tops-in { from { opacity: 0; transform: translateY(10px) scale(.9); } }
+.tops .ci.c1 { background: var(--st-1); color: #fff; }
+.tops .ci.c2 { background: var(--st-2); color: #3a2a24; }
+.tops .ci.c3 { background: var(--st-3); color: #fff; }
+.tops b { font: 700 16px var(--f-sans); font-variant-numeric: tabular-nums; }
+
+/* inner pages */
+.page { display: grid; gap: var(--s-5); align-content: start; max-width: 860px; }
+.page.is-wide { max-width: none; }
+.cu-seg button { white-space: nowrap; flex: none; }
+.cu-pagehead > .cu-seg { display: inline-flex; justify-self: end; }   /* .cu-pagehead > div is grid in components.css */
+
+/* library: one card per app */
+.lgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--s-4); }
+.lcard { background: var(--c-surface); border-radius: var(--r-lg); padding: var(--s-2); display: grid; gap: var(--s-3); align-content: start; }
+.lcard .art { position: relative; aspect-ratio: 16 / 10; max-width: 100%; border-radius: calc(var(--r-lg) - var(--s-2)); background: var(--art); overflow: hidden; }
+.lcard .art .glyph { position: absolute; right: -10%; top: -18%; width: 64%; height: auto; aspect-ratio: 1; opacity: .16; --cu-i-w: 1.25; }
+.lcard .art .ic { position: absolute; left: var(--s-3); bottom: var(--s-3); width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--c-sunken); }
+.lcard .art .ic .cu-i { width: 18px; height: 18px; }
+.lcard .art .cu-dot { position: absolute; right: var(--s-3); top: var(--s-3); font-size: var(--t-meta); color: var(--c-ink); }
+.lcard .bd { display: grid; gap: 2px; padding: 0 var(--s-2); min-width: 0; }
+.lcard .bd b { font: 600 15px var(--f-sans); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lcard .ft { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); padding: 0 var(--s-2) var(--s-2); min-height: 32px; }
+.lcard .cu-progress { flex: 1; }
+.cu-more > .cu-morebtn { margin-top: var(--s-4); }
+
+.page .cu-pagehead { min-height: 44px; }
+.q .cu-row { grid-template-columns: 40px minmax(0, 1fr) auto auto; padding: var(--s-3) 0; }
+.q .cu-dot { font-size: var(--t-meta); }
+.list-card { padding: var(--s-2) var(--s-6) var(--s-4); }
+.q .cu-row > div { display: grid; gap: 4px; }
+.q .cu-row .cu-progress { width: 100%; }
+.q .speed { font: 600 13px var(--f-sans); font-variant-numeric: tabular-nums; min-width: 72px; text-align: right; }
+.hist { padding: var(--s-6); }
+.cu-settings ul { background: var(--c-surface); }
+.cu-settings .cu-label { margin-left: var(--s-5); }
+.cu-settings ul { padding: 0 var(--s-5); }
+.path { font: 500 12.5px var(--f-mono); color: var(--c-ink-2); }
+
+/* user menu: floats next to the profile avatar */
+.umenu { position: absolute; top: 56px; right: calc(64px + var(--s-4) + var(--s-3)); z-index: 30; width: 272px; display: grid; gap: var(--s-2); padding: var(--s-2);
+  background: var(--c-raised); color: var(--c-ink); border-radius: var(--r-md); box-shadow: var(--e-float); animation: chat-in var(--m-base) var(--ease); }
+.umenu[hidden] { display: none; }
+
+/* notifications: drops from the bell */
+.npanel { position: absolute; z-index: 30; width: 340px; max-width: calc(100% - 2 * var(--s-4)); display: grid; gap: var(--s-1); padding: var(--s-3) var(--s-4) var(--s-2);
+  background: var(--c-raised); color: var(--c-ink); border-radius: var(--r-md); box-shadow: var(--e-float); animation: chat-in var(--m-base) var(--ease); box-sizing: border-box; }
+.npanel[hidden] { display: none; }
+.npanel .nh { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
+.npanel .nh b { font: 600 15px var(--f-sans); }
+.npanel .cu-row { grid-template-columns: 36px minmax(0, 1fr) auto; cursor: pointer; }
+.npanel .cu-row .cu-ico { width: 36px; height: 36px; background: var(--c-surface); color: var(--c-ink); }
+.npanel .cu-row:hover b { text-decoration: underline; text-underline-offset: 3px; }
+.npanel .cu-row b { white-space: normal; }
+.npanel .empty { padding: var(--s-4) 0; text-align: center; }
+.umenu .uh { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: var(--s-3); padding: var(--s-2) var(--s-2) var(--s-1); }
+.umenu .uh .av { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--c-accent); color: var(--c-on-accent); font: 700 15px var(--f-sans); }
+.umenu .uh b { display: block; font: 600 15px var(--f-sans); }
+.umenu .cu-seg { justify-self: stretch; display: flex; margin: 0 var(--s-1); }
+.umenu .cu-seg button { flex: 1; justify-content: center; }
+.umenu .cu-menu { background: transparent; box-shadow: none; padding: 0; min-width: 0; }
+.umenu .cu-menu button:hover { background: var(--c-surface); }
+@media (max-width: 1180px) { .umenu { top: 100px; right: var(--s-4); } }
+
+/* chat: floats bottom-right over the window, next to the people rails */
+.win { position: relative; }
+.chatw { position: absolute; right: calc(64px + var(--s-4) * 2); bottom: var(--s-4); z-index: 20; width: 340px; max-width: calc(100% - 2 * var(--s-4)); height: min(460px, calc(100% - 80px));
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: var(--s-3); padding: var(--s-4); box-sizing: border-box;
+  background: var(--c-surface); color: var(--c-ink); border-radius: var(--r-lg); box-shadow: var(--e-float); animation: chat-in var(--m-base) var(--ease); }
+.chatw[hidden] { display: none; }
+.newp .pbody { overflow-y: auto; display: grid; gap: var(--s-3); align-content: start; scrollbar-width: thin; scrollbar-color: var(--c-raised) transparent; }
+.newp .cu-input { background: var(--c-sunken); border-radius: var(--r-pill); }
+.newp .cu-row { grid-template-columns: 36px minmax(0, 1fr) auto; cursor: pointer; border-radius: var(--r-sm); padding: var(--s-2); border-top: 0; }
+.newp .cu-row:hover { background: var(--c-raised); }
+.newp .cu-row .av { position: relative; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--art); font: 700 12px var(--f-sans); }
+.newp .cu-row .cu-dot { font-size: var(--t-meta); }
+.newp .cu-list { display: grid; gap: 2px; }
+.newp .cu-check { width: 100%; padding: var(--s-2); box-sizing: border-box; border-radius: var(--r-sm); }
+.newp .cu-check:hover { background: var(--c-raised); }
+.newp .cu-actions { justify-content: flex-end; }
+@keyframes chat-in { from { opacity: 0; transform: translateY(12px) scale(.98); } }
+.chatw .ch { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: var(--s-3); }
+.chatw .ch .who { position: relative; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--art); font: 700 13px var(--f-sans); }
+.chatw .ch .who.grp { border-radius: 14px; font-size: 12px; }
+.chatw .ch .who.is-on::after, .chatw .ch .who.is-away::after { content: ""; position: absolute; right: 0; bottom: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--c-pos); box-shadow: 0 0 0 2px var(--c-surface); }
+.chatw .ch .who.is-away::after { background: var(--c-warn); }
+.chatw .ch b { display: block; font: 600 15px var(--f-sans); }
+.chatw .cu-chat { overflow-y: auto; align-content: end; padding-right: 2px; scrollbar-width: thin; scrollbar-color: var(--c-raised) transparent; }
+.chatw .cu-msg-meta { margin: var(--s-1) 0 var(--s-1) var(--s-1); }
+.chatw .cu-composer { background: var(--c-sunken); }
+.rcol .who[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--c-surface), 0 0 0 4px var(--c-ink); }
+@media (prefers-reduced-motion: reduce) { .chatw { animation: none; } }
+@media (max-width: 720px) { .chatw { right: var(--s-4); bottom: calc(var(--s-4) + 72px); height: min(460px, calc(100% - 140px)); } }
+
+/* inside the desktop app (Electron): the window itself is the card - no wallpaper, no floating shadow */
+html.is-desktop body { padding: 0; place-items: stretch; background: var(--c-sunken); }
+html.is-desktop .win { width: 100%; height: 100%; min-height: 0; border-radius: 0; box-shadow: none; }
+
+/* short windows (1366x768, 1280x720): home still fits one screen */
+@media (max-height: 740px) { .home .shelf { --th: 156px; } .home .ucards { gap: var(--s-2); } .home .ucard { padding: 6px var(--s-3); } .home .ucard .cu-ico { width: 40px !important; height: 40px !important; } .home .tops .ci { width: 40px; height: 40px; } .home .tops b { font-size: 14px; } .home .statc { gap: var(--s-3); padding-block: var(--s-4); } }   /* more specific: the 900px block below sets 172px */
+@media (max-height: 900px) {
+  .cu-feature { min-height: 0; padding-block: var(--s-5); }
+  .cu-feature .hero-t { font-size: 40px; }
+  .shelf { --th: 172px; }
+  .tile .tt { font-size: 17px; left: var(--s-4); right: var(--s-4); bottom: var(--s-4); }
+  .statc { gap: var(--s-4); padding-block: var(--s-5); }
+  .tops .ci { width: 46px; height: 46px; } .tops .ci .cu-i { width: 20px; height: 20px; }
+  .ucard { padding: var(--s-2) var(--s-3); }
+  .ucard .cu-ico { width: 44px !important; height: 44px !important; }
+  .dlc { min-height: 92px; padding-block: var(--s-3); }
+  .empty-dl { min-height: 92px; }
+  .dlc .dtile { width: 64px; height: 64px; }
+}
+
+@media (max-width: 1180px) { .body { grid-template-columns: 64px minmax(0, 1fr); } .rcol { display: none; } .top .me-sm { display: inline-grid; } .home { grid-template-columns: minmax(0, 1fr) 280px; } }
+@media (max-width: 980px) {
+  .home { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "feat" "apph" "shelf" "dlh" "dl" "upd" "stath" "stat"; }
+  .home .statc { contain: none; grid-template-rows: auto auto; } .home .blob { height: auto; width: 248px; }   /* stacked: the card sizes itself again */
+}
+@media (max-width: 720px) {
+  body { padding: 0; }
+  .win { height: 100%; min-height: 0; border-radius: 0; box-shadow: none; grid-template-rows: 40px minmax(0, 1fr) auto; }
+  .tbar .ver, .caps { display: none; }
+  .body { grid-template-columns: minmax(0, 1fr); padding: 0 var(--s-4); }
+  .cu-rail.main { grid-row: 3; flex-direction: row; justify-content: space-around; border-radius: var(--r-lg); margin: var(--s-3) var(--s-4) var(--s-4); padding: var(--s-2); }
+  .cu-rail.main .sp, .cu-rail.main .logo { display: none; }
+  .cu-rail [data-cu-tip]:hover::after { display: none; }
+  .side { grid-template-columns: minmax(0, 1fr); }
+  .top .greet { display: none; } .top .cu-search { flex: 1; }
+  .cu-feature { min-height: 250px; margin-top: var(--s-10); align-content: end; }
+  .cu-feature .cu-cutout { height: 62%; top: -44px; bottom: auto; right: 0; }
+  .cu-feature > :not(.cu-cutout) { max-width: 100%; }
+  .cu-feature { --bg-end: 0%; }
+  .cu-feature > .fdots { top: auto; bottom: var(--s-4); right: var(--s-5); }   /* the character fills the top right here: the bars go under it, level with the buttons */
+  .shelf { --th: min(62vw, 240px); margin-inline: calc(var(--s-4) * -1); } .tiles { padding-inline: var(--s-4); scroll-padding-inline: var(--s-4); } .shelf-next { display: none; }
+  .dlc { grid-template-columns: 52px minmax(0, 1fr) auto; gap: var(--s-3); } .dlc .dtile { width: 52px; height: 52px; } .dlc .tm { display: none; } .dlc .nm b { font-size: 16px; }
+  .q .cu-row { grid-template-columns: 40px minmax(0, 1fr) auto; } .q .speed { display: none; }
+  .lgrid { grid-template-columns: minmax(0, 1fr); gap: var(--s-3); }
+  .lcard .ft .cu-meta { display: none; }
+  .list-card { padding-inline: var(--s-4); }
+}
+</style>
+<!--@sprite-->
+
+<div class="win" role="application" aria-label="Force Studio">
+  <header class="tbar">
+    <span class="brand">Force Studio</span><span class="ver">1.0.0</span>
+    <div class="caps">
+      <button type="button" data-win="min" aria-label="Simge durumuna küçült"><svg class="cu-i"><use href="#i-minus"/></svg></button>
+      <button type="button" data-win="max" aria-label="Ekranı kapla"><svg class="cu-i"><use href="#i-square"/></svg></button>
+      <button type="button" data-win="close" class="is-close" aria-label="Kapat"><svg class="cu-i"><use href="#i-x"/></svg></button>
+    </div>
+  </header>
+
+  <div class="body">
+    <nav class="cu-rail main" aria-label="Ana menü">
+      <span class="logo"><img src="assets/force-mark.png" alt="Force Studio" width="23" height="27"></span>
+      <a href="#home" data-view="home" aria-current="page" aria-label="Ana sayfa" data-cu-tip="Ana sayfa"><svg class="cu-i"><use href="#i-house"/></svg></a>
+      <a href="#library" data-view="library" aria-label="Kütüphane" data-cu-tip="Kütüphane"><svg class="cu-i"><use href="#i-layout-grid"/></svg></a>
+      <span class="sp"></span>
+      <a href="#downloads" data-view="downloads" aria-label="İndirmeler" data-cu-tip="İndirmeler"><svg class="cu-i"><use href="#i-download"/></svg><span class="dl-dot" hidden></span></a>
+      <a href="#settings" data-view="settings" aria-label="Ayarlar" data-cu-tip="Ayarlar"><svg class="cu-i"><use href="#i-settings"/></svg></a>
+    </nav>
+
+    <!-- ============ HOME ============ -->
+    <main class="view home" id="v-home">
+      <div class="top">
+        <span class="greet" id="greet"></span>
+        <label class="cu-search"><svg class="cu-i"><use href="#i-search"/></svg><input class="cu-input" type="search" placeholder="Ara" aria-label="Uygulama ara" id="q"></label>
+        <span class="icons">
+          <button class="cu-iconbtn" id="check" aria-label="Güncellemeleri denetle" data-cu-tip="Denetle"><svg class="cu-i"><use href="#i-refresh-cw"/></svg></button>
+          <span class="cu-badge"><button class="cu-iconbtn" id="bell" aria-label="Bildirimler" aria-expanded="false" aria-controls="notif" data-cu-tip="Bildirimler"><svg class="cu-i"><use href="#i-bell"/></svg></button><b id="bellN"></b></span>
+          <button class="cu-iconbtn me-sm" data-umenu aria-label="Kullanıcı menüsü" aria-expanded="false">M</button>
+        </span>
+      </div>
+
+      <div class="col">
+        <section class="cu-feature a-feat" id="feature" aria-roledescription="carousel" aria-label="Öne çıkanlar">
+          <img class="cu-cutout" src="assets/feature-robot.webp" alt="" width="525" height="640" decoding="async">
+          <div class="fbody" id="fbody" aria-live="polite"></div>
+          <div class="fdots" id="fdots" role="tablist" aria-label="Öne çıkanlar"></div>
+        </section>
+
+        <div class="sec-h a-apph" data-align="row-heads"><span class="cu-head">Yeni Uygulamalar</span><a href="#library" data-view="library">Tümü</a></div>
+        <div class="shelf a-shelf"><div class="tiles" id="tiles"></div><button type="button" class="shelf-next" id="shelfNext" aria-label="Sonraki uygulamalar"></button></div>
+
+        <div class="sec-h a-dlh"><span class="cu-head">Son İndirmeler</span><a href="#downloads" data-view="downloads">Tümü</a></div>
+        <section class="dl-wrap a-dl" id="dlHome"></section>
+      </div>
+
+      <aside class="col side">
+        <div class="ucards a-upd" id="updList"></div>
+        <div class="sec-h a-stath" data-align="row-heads"><span class="cu-head">İstatistik</span><a href="#library" data-view="library" aria-label="Tüm uygulamalar"><svg class="cu-i is-sm"><use href="#i-arrow-right"/></svg></a></div>
+        <section class="cu-card statc a-stat">
+          <div class="blob" id="blob"></div>
+          <div class="tops" id="tops"></div>
+        </section>
+      </aside>
+    </main>
+
+    <!-- ============ LIBRARY ============ -->
+    <main class="view" id="v-library" hidden>
+      <div class="page is-wide">
+        <header class="cu-pagehead"><div><h1 class="cu-title">Kütüphane</h1><span class="cu-meta" id="libMeta"></span></div>
+          <div class="cu-seg" role="group" aria-label="Filtre" id="libSeg">
+            <button type="button" aria-pressed="true" data-f="all">Tümü</button><button type="button" aria-pressed="false" data-f="inst">Kurulu</button><button type="button" aria-pressed="false" data-f="upd">Güncelleme</button>
+          </div>
+        </header>
+        <div class="cu-more" id="libMore"></div>
+      </div>
+    </main>
+
+    <!-- ============ DOWNLOADS ============ -->
+    <main class="view" id="v-downloads" hidden>
+      <div class="page">
+        <header class="cu-pagehead"><div><h1 class="cu-title">İndirmeler</h1><span class="cu-meta" id="qMeta"></span></div><button class="cu-btn is-sm is-quiet" id="pauseAll">Tümünü duraklat</button></header>
+        <section class="cu-card list-card q"><ul class="cu-list" id="qList"></ul></section>
+        <section class="cu-card hist"><div class="cu-section-h" style="margin-bottom:var(--s-4)"><span class="cu-head">Geçmiş</span></div><ol class="cu-timeline" id="hist"></ol></section>
+      </div>
+    </main>
+
+    <!-- ============ SETTINGS ============ -->
+    <main class="view" id="v-settings" hidden>
+      <div class="page">
+        <header class="cu-pagehead"><div><h1 class="cu-title">Ayarlar</h1><span class="cu-meta">Force Studio 1.0.0</span></div></header>
+        <div class="cu-settings">
+          <section><span class="cu-label">Güncellemeler</span><ul>
+            <li><span><b>Otomatik güncelle</b><span class="cu-meta">Uygulamalar kapalıyken</span></span><label class="cu-switch"><input type="checkbox" checked aria-label="Otomatik güncelle"></label></li>
+            <li><span><b>Arka planda indir</b></span><label class="cu-switch"><input type="checkbox" checked aria-label="Arka planda indir"></label></li>
+            <li><span><b>Hız sınırı</b></span><div class="cu-seg" role="group" aria-label="Hız sınırı"><button type="button" aria-pressed="true">Yok</button><button type="button" aria-pressed="false">10 MB/s</button><button type="button" aria-pressed="false">5 MB/s</button></div></li>
+          </ul></section>
+          <section><span class="cu-label">Uygulama</span><ul>
+            <li><span><b>Windows ile başlat</b></span><label class="cu-switch"><input type="checkbox" aria-label="Windows ile başlat"></label></li>
+            <li><span><b>Kapatınca tepsiye küçült</b></span><label class="cu-switch"><input type="checkbox" checked aria-label="Tepsiye küçült"></label></li>
+            <li><span><b>Tema</b></span><div class="cu-seg" role="group" aria-label="Tema" id="themeSeg"><button type="button" aria-pressed="true" data-t="tint">Renkli</button><button type="button" aria-pressed="false" data-t="mono">Koyu</button><button type="button" aria-pressed="false" data-t="light">Açık</button></div></li>
+          </ul></section>
+          <section><span class="cu-label">Depolama</span><ul>
+            <li class="is-link"><span><b>Kurulum klasörü</b><span class="path">C:\Program Files\Force Studio\apps</span></span><span class="cu-go">Değiştir</span></li>
+            <li class="is-link"><span><b>Önbellek</b></span><span class="cu-go">1.2 GB</span></li>
+          </ul></section>
+          <section><span class="cu-label">Hesap</span><ul>
+            <li class="is-link is-neg"><span><b>Çıkış yap</b></span></li>
+          </ul></section>
+        </div>
+      </div>
+    </main>
+
+    <div class="npanel" id="notif" hidden role="dialog" aria-label="Bildirimler">
+      <div class="nh"><b>Bildirimler</b><button type="button" class="cu-btn is-sm is-ghost" id="readAll">Tümünü okundu say</button></div>
+      <ul class="cu-list" id="nList"></ul>
+    </div>
+
+    <div class="umenu" id="umenu" hidden>
+      <div class="uh"><span class="av" id="uAv">M</span><div><b id="uName">Mehmet</b><span class="cu-meta" id="uSt">Çevrimiçi</span></div></div>
+      <div class="cu-seg" role="group" aria-label="Durum" id="stSeg"><button type="button" aria-pressed="true" data-st="on">Çevrimiçi</button><button type="button" aria-pressed="false" data-st="away">Uzakta</button><button type="button" aria-pressed="false" data-st="off">Görünmez</button></div>
+      <ul class="cu-menu" role="menu">
+        <li><button type="button" role="menuitem" data-um="profile"><svg class="cu-i"><use href="#i-user"/></svg>Profilim</button></li>
+        <li><button type="button" role="menuitem" data-um="friends"><svg class="cu-i"><use href="#i-users"/></svg>Arkadaşlar</button></li>
+        <li><button type="button" role="menuitem" data-view="settings"><svg class="cu-i"><use href="#i-settings"/></svg>Ayarlar</button></li>
+        <li><hr></li>
+        <li><button type="button" role="menuitem" class="is-neg" data-um="logout"><svg class="cu-i"><use href="#i-log-out"/></svg>Çıkış yap</button></li>
+      </ul>
+    </div>
+
+    <section class="chatw" id="chat" hidden aria-label="Sohbet">
+      <header class="ch"><span class="who" id="chatAv"></span><div><b id="chatName"></b><span class="cu-meta" id="chatSt"></span></div>
+        <button type="button" class="cu-iconbtn is-ghost is-sm" id="chatClose" aria-label="Sohbeti kapat"><svg class="cu-i"><use href="#i-x"/></svg></button></header>
+      <div class="cu-chat" id="chatLog" aria-live="polite"></div>
+      <form class="cu-composer" id="chatForm"><input id="chatIn" placeholder="Mesaj yaz" aria-label="Mesaj" autocomplete="off"><button class="cu-iconbtn is-primary is-sm" aria-label="Gönder"><svg class="cu-i"><use href="#i-send"/></svg></button></form>
+    </section>
+
+    <section class="chatw newp" id="newChat" hidden aria-label="Yeni sohbet">
+      <header class="ch" style="grid-template-columns:minmax(0,1fr) auto"><b>Yeni sohbet</b><button type="button" class="cu-iconbtn is-ghost is-sm" data-closep aria-label="Kapat"><svg class="cu-i"><use href="#i-x"/></svg></button></header>
+      <div class="pbody">
+        <label class="cu-search"><svg class="cu-i"><use href="#i-search"/></svg><input class="cu-input" type="search" id="ncQ" placeholder="Kişi ara" aria-label="Kişi ara" autocomplete="off"></label>
+        <ul class="cu-list" id="ncList"></ul>
+      </div>
+    </section>
+
+    <section class="chatw newp" id="newGroup" hidden aria-label="Yeni grup">
+      <header class="ch" style="grid-template-columns:minmax(0,1fr) auto"><b>Yeni grup</b><button type="button" class="cu-iconbtn is-ghost is-sm" data-closep aria-label="Kapat"><svg class="cu-i"><use href="#i-x"/></svg></button></header>
+      <div class="pbody">
+        <label class="cu-field"><span class="cu-label">Grup adı</span><input class="cu-input" id="ngName" placeholder="Örn. Turnuva" maxlength="24" autocomplete="off"></label>
+        <span class="cu-label">Üyeler</span>
+        <div id="ngList" style="display:grid;gap:2px"></div>
+      </div>
+      <div class="cu-actions"><button type="button" class="cu-btn" id="ngCreate" disabled>Oluştur</button></div>
+    </section>
+
+    <aside class="rcol">
+      <nav class="cu-rail" aria-label="Arkadaşlar" id="friends"></nav>
+      <nav class="cu-rail" aria-label="Gruplar" id="groups"></nav>
+    </aside>
+  </div>
+</div>
+
+<div class="cu-toast" role="status" id="toast" hidden></div>
+
+<script>
+/*@calm*/
+</script>
+<script>
+(() => {
+  // ---------------- data (mock - replaced by the update server's manifest) ----------------
+  const apps = [
+    // our own apps (images: design/assets/app-*.webp, bg = the artwork's ground, ink = title colour on it)
+    { id: 'lfg',       name: 'LFG', desc: 'Looking For Game',  img: 'assets/app-lfg.webp', ico: 'assets/app-lfg-c.webp',       bg: '#090a0e', ink: '#f7f1f3', icon: 'i-users',       art: 4, v: '1.0.0', mb: 240, used: 'Az önce',   hrs: 120 },
+    { id: 'algo',      name: 'The Algorithm Card Game',       img: 'assets/app-algo.webp', ico: 'assets/app-algo-c.webp',      bg: '#000000', ink: '#f7f1f3', icon: 'i-layers',      art: 2, v: '1.2.0', mb: 410, used: '1 sa önce', hrs: 96 },
+    { id: 'doshub',    name: 'Doshub',                        img: 'assets/app-doshub.webp', ico: 'assets/app-doshub-c.webp',    bg: '#fdfdfd', ink: '#17161a', icon: 'i-users',       art: 5, v: '2.0.3', mb: 180, used: 'Dün',       hrs: 64 },
+    { id: 'walletbud', name: 'WalletBud',                     img: 'assets/app-walletbud.webp', ico: 'assets/app-walletbud-c.webp', bg: '#fcfcfa', ink: '#17161a', icon: 'i-wallet',      art: 3, v: '1.4.1', mb: 95,  used: 'Dün',       hrs: 48 },
+    { id: 'market',    name: 'MiniMarket Sim',                img: 'assets/app-market.webp', ico: 'assets/app-market-c.webp',    bg: '#fcfcfa', ink: '#17161a', icon: 'i-store',       art: 6, v: '0.9.8', mb: 820, used: '2 gün önce', hrs: 150 },
+    { id: 'kilibik',   name: 'Kılıbık',                       img: 'assets/app-kilibik.webp', ico: 'assets/app-kilibik-c.webp',   bg: '#fc5629', ink: '#17161a', icon: 'i-sparkle',     art: 1, v: '1.0.2', mb: 130, used: '3 gün önce', hrs: 30 },
+    // sample apps
+    { id: 'forge',  name: 'A Lone', icon: 'i-palette',        art: 1, v: '3.1.0', next: '3.2.0', mb: 1840, used: '2 dk önce', run: false, hrs: 540 },
+    { id: 'deck',   name: 'Sound Deck',  icon: 'i-music',          art: 2, v: '2.4.1', mb: 960,  used: 'Açık',     run: true, hrs: 420 },
+    { id: 'trail',  name: 'Sky Card',    icon: 'i-map',            art: 3, v: '1.8.0', next: '1.9.2', mb: 1420, used: 'Dün', hrs: 96 },
+    { id: 'snap',   name: 'Snap Studio', icon: 'i-camera',         art: 4, v: '5.2.0', next: '5.3.0', mb: 3100, used: '3 gün önce', hrs: 210 },
+    { id: 'ledger', name: 'Ledger',      icon: 'i-wallet',         art: 6, v: '4.0.2', mb: 580,  used: '1 hafta önce', hrs: 60 },
+    { id: 'code',   name: 'Code Pad',    icon: 'i-code',           art: 2, v: '1.2.0', mb: 2120, used: '2 hafta önce', hrs: 324 },
+    { id: 'pulse',  name: 'Pulse',       icon: 'i-activity',       art: 5, v: '2.0.1', mb: 440,  used: '3 hafta önce', hrs: 38 },
+    { id: 'chat',   name: 'Chat Room',   icon: 'i-message-circle', art: 1, v: '3.3.0', mb: 1200, used: '1 ay önce', hrs: 150 },
+    { id: 'note',   name: 'Notebook',    icon: 'i-notebook-pen',   art: 3, v: '1.0.4', mb: 360,  used: '1 ay önce', hrs: 22 },
+    { id: 'arena',  name: 'Arena',       icon: 'i-gamepad-2',      art: 6, v: null, next: '1.0.0', mb: 14800 },
+    { id: 'sky',    name: 'Skycast',     icon: 'i-cloud-sun',      art: 5, v: null, next: '2.1.0', mb: 640 },
+    { id: 'fit',    name: 'Fit Log',     icon: 'i-dumbbell',       art: 4, v: null, next: '1.5.0', mb: 880 },
+  ];
+  const byId = Object.fromEntries(apps.map(a => [a.id, a]));
+  const queue = [{ id: 'arena', p: 64, paused: false, speed: 24.6 }];   // active downloads
+  const history = [
+    { t: 'Ledger 4.0.2 kuruldu', m: 'Dün' },
+    { t: 'Code Pad 1.2.0 kuruldu', m: '3 gün önce' },
+    { t: 'Pulse 2.0.1 kuruldu', m: '1 hafta önce' },
+  ];
+  const me = { name: 'Mehmet', ini: 'M', st: 'on' };
+  const ST = { on: 'Çevrimiçi', away: 'Uzakta', off: 'Görünmez' };
+  const friends = [
+    { name: 'Zeynep', st: 'on', now: 'Arena oynuyor', art: 3 },
+    { name: 'Can', st: 'on', now: 'A Lone', art: 1 },
+    { name: 'Elif', st: 'away', now: 'Uzakta', art: 5 },
+    { name: 'Burak', st: 'on', now: 'Çevrimiçi', art: 6 },
+    { name: 'Deniz', st: 'off', now: '2 sa önce', art: 2 },
+    { name: 'Selin', st: 'off', now: 'Dün', art: 4 },
+    { name: 'Kaan', st: 'off', now: '3 gün önce', art: 3 },
+  ];
+  const groups = [
+    { name: 'Beta test', ini: 'BT', unread: 4, art: 1 },
+    { name: 'Tasarım', ini: 'TS', unread: 0, art: 5 },
+    { name: 'Arena klan', ini: 'AK', unread: 12, art: 6 },
+  ];
+  // sample conversations (mock)
+  const convo = {
+    Zeynep: [['t', 'Arena 1.0 çıkınca haber ver'], ['me', 'İndiriyorum, %60 oldu'], ['t', 'Süper, akşam bir maç?']],
+    Can: [['t', 'A Lone 3.2’de katmanlar düzelmiş mi?'], ['me', 'Güncelleme notlarında var, şimdi deniyorum']],
+    Elif: [['t', 'Tasarım dosyalarını gruba attım']],
+    Burak: [['me', 'Sky Card’ta yeni sezon geldi mi?'], ['t', 'Evet, 1.9’da geldi']],
+    Deniz: [['t', 'Yarın beta test var, unutma']],
+    Selin: [], Kaan: [],
+    'Beta test': [['Can', 'Build 214 yüklendi'], ['Elif', 'Giriş ekranında küçük bir kayma var'], ['me', 'Bakıyorum']],
+    'Tasarım': [['Elif', 'Yeni ikon seti hazır']],
+    'Arena klan': [['Zeynep', 'Bu akşam 21:00 turnuva'], ['Burak', 'Ben varım'], ['Kaan', 'Ben de']],
+  };
+  const replies = ['Tamam 👍', 'Anladım, bakarım', 'Olur, sonra konuşalım', 'Harika!'];
+  const notifs = [
+    { icon: 'i-refresh-cw', t: 'A Lone 3.2.0 hazır', m: '2 dk önce', unread: true, open: () => go('library') },
+    { icon: 'i-message-circle', t: 'Zeynep: Süper, akşam bir maç?', m: '5 dk önce', unread: true, open: () => openChat('Zeynep') },
+    { icon: 'i-users', t: 'Arena klan: 12 yeni mesaj', m: '1 sa önce', unread: true, open: () => openChat('Arena klan') },
+    { icon: 'i-circle-check', t: 'Ledger 4.0.2 kuruldu', m: 'Dün', unread: false, open: () => go('library') },
+  ];
+  const DISK = 256 * 1024, FREE_OTHER = 148 * 1024;   // MB; mock C: drive
+
+  // ---------------- helpers ----------------
+  const $ = s => document.querySelector(s);
+  const appIco = (a, cls = '') => a.img ? `<img class="aimg ${cls}" src="${a.ico || a.img}" alt="">`   /* ico: the same art centred (img keeps it high for the shelf's title band) */ : ic(a.icon, cls);
+  const ic = (id, cls = '') => `<svg class="cu-i ${cls}"><use href="#${id}"/></svg>`;
+  // how many friends fit in the rail: padding 32 + me 44 + hr 1 + add 40 + gaps, then 52 per friend (40 + 12 gap)
+  // measured on the room the column gives the strip (not the strip itself, which may hug its content)
+  const fitFriends = () => Math.max(0, Math.floor(($('.rcol').clientHeight - $('#groups').offsetHeight - 16 - 141) / 52));
+  const setHTML = (el, html) => { if (el._h !== html) { el._h = html; el.innerHTML = html; } };   // rebuild only on change, so hover/focus survive the download ticks
+  const gb = mb => mb >= 1024 ? (mb / 1024).toFixed(1).replace('.', ',') + ' GB' : mb + ' MB';
+  const state = a => queue.some(q => q.id === a.id) ? 'dl' : !a.v ? 'none' : a.next ? 'upd' : 'ok';
+  const inQ = id => queue.find(q => q.id === id);
+  let toastT;
+  const toast = (msg, action) => {
+    const t = $('#toast'); clearTimeout(toastT);
+    t.innerHTML = msg + (action ? `<button type="button">${action.label}</button>` : '');
+    if (action) t.querySelector('button').onclick = () => { action.run(); t.hidden = true; };
+    t.hidden = false; toastT = setTimeout(() => t.hidden = true, action ? 4000 : 1800);
+  };
+
+  // ---------------- actions ----------------
+  const start = id => { if (!inQ(id)) queue.push({ id, p: 0, paused: false, speed: 0 }); render(); };
+  const launch = id => { apps.forEach(a => { if (a.id === id) a.run = true; }); byId[id].used = 'Açık'; toast(`${byId[id].name} açılıyor`); render(); };
+  const act = (id) => { const s = state(byId[id]); if (s === 'ok') launch(id); else if (s === 'upd' || s === 'none') start(id); else if (s === 'dl') { const q = inQ(id); q.paused = !q.paused; render(); } };
+  const cancel = id => { const i = queue.findIndex(q => q.id === id); if (i < 0) return; const [q] = queue.splice(i, 1); render(); toast(`${byId[id].name} iptal edildi`, { label: 'Geri al', run: () => { queue.splice(i, 0, q); render(); } }); };
+
+  const btnFor = (a, sm = true) => {
+    const s = state(a), q = inQ(a.id);
+    const label = { ok: 'Aç', upd: 'Güncelle', none: 'Yükle', dl: q && q.paused ? 'Sürdür' : 'Duraklat' }[s];
+    const quiet = s === 'ok' || s === 'dl';
+    return `<button type="button" class="cu-btn ${sm ? 'is-sm' : ''} ${quiet ? 'is-quiet' : ''}" data-act="${a.id}">${label}</button>`;
+  };
+
+  // ---------------- render ----------------
+  function render() {
+    const inst = apps.filter(a => a.v), upd = apps.filter(a => state(a) === 'upd'), fresh = inst.filter(a => !a.next);
+
+    // greeting
+    const h = new Date().getHours();
+    $('#greet').innerHTML = `${h < 12 ? 'Günaydın' : h < 18 ? 'İyi günler' : 'İyi akşamlar'}, <b>Mehmet</b>`;
+
+    // feature: a carousel of the apps with updates, then LFG
+    const f = byId[FEAT[featIdx]], fs = state(f), fq = inQ(f.id);
+    setHTML($('#fdots'), FEAT.map((id, i) => `<button type="button" role="tab" data-feat="${i}" aria-selected="${i === featIdx}" aria-label="${byId[id].name}"></button>`).join(''));
+    setHTML($('#fbody'), `
+      <span class="cu-chip is-inverse">${fs === 'upd' ? 'Yeni sürüm' : fs === 'dl' ? 'İndiriliyor' : 'Öne çıkan'}</span>
+      <h2 class="hero-t">${f.name}</h2>
+      <div class="row"><span class="cu-meta">${f.next && fs !== 'ok' ? `${f.v} → <b style="color:var(--c-ink)">${f.next}</b>` : (f.desc ? f.desc + ' · ' : '') + f.v} · ${gb(f.mb)}</span></div>
+      ${fq ? `<div class="cu-progress" style="width:220px"><i style="--v:${fq.p}%"></i></div>` : ''}
+      <div class="cu-actions">${btnFor(f, false)}<button type="button" class="cu-btn is-ghost" data-notes="${f.id}">Sürüm notları</button></div>`);
+
+    // my apps shelf: installed apps, last used first
+    setHTML($('#tiles'), inst.map((a, i) => `
+      <button type="button" class="tile art-${a.art} ${a.img ? 'has-img' : ''}" ${a.img ? `style="--tile-bg:${a.bg};--tile-ink:${a.ink}"` : ''} data-act="${a.id}" aria-label="${a.name} ${state(a) === 'ok' ? 'aç' : 'güncelle'}">
+        ${a.img ? `<img class="tphoto" src="${a.img}" alt="">` : tileArt(i) + ic(a.icon, 'hero')}
+        ${a.run ? '<span class="cu-dot is-pos">Açık</span>' : state(a) === 'upd' ? '<span class="cu-dot is-warn">Güncelleme</span>' : ''}
+        <span class="tt">${a.name}</span>
+      </button>`).join(''));
+    shelf();
+
+    // active download (home)
+    const d = queue[0];
+    $('#dlHome').innerHTML = d ? dlCard(d) : `<div class="cu-card empty-dl">${ic('i-circle-check')}<span>Her şey güncel</span></div>`;
+
+    // updates list
+    $('#updList').innerHTML = (upd.length ? upd.slice(0, 3).map(a => `
+      <div class="ucard"><div class="cu-row"><span class="cu-ico art-${a.art}">${appIco(a)}</span>
+        <div><b>${a.name}</b><span class="cu-meta vv">${a.v} → ${a.next}</span></div>${btnFor(a)}</div></div>`).join('')
+      : `<div class="ucard"><div class="cu-row"><span class="cu-ico art-5">${ic('i-check')}</span><div><b>Hepsi güncel</b><span class="cu-meta">${fresh.length} uygulama</span></div><span></span></div></div>`)
+      + (upd.length > 3 ? `<button class="cu-morebtn" type="button" data-view="library" style="margin:0;justify-self:start">${upd.length - 3} daha</button>` : '');
+
+    // statistic: total hours + top three
+    const hrs = n => n.toLocaleString('tr') + ' sa';
+    const byUse = inst.filter(a => a.hrs).sort((x, y) => y.hrs - x.hrs);
+    const tot = byUse.reduce((t, a) => t + a.hrs, 0); $('#blobTotal').dataset.v = tot;
+    if (performance.now() > countUntil) $('#blobTotal').textContent = hrs(tot);   // not while it counts up
+    setHTML($('#tops'), byUse.slice(0, 3).map((a, i) => `<div><span class="ci c${i + 1}" title="${a.name}" aria-label="${a.name}">${appIco(a)}</span><b>${hrs(a.hrs)}</b></div>`).join(''));
+
+    // library
+    const f2 = $('#libSeg [aria-pressed="true"]').dataset.f, term = $('#q').value.trim().toLowerCase();
+    const libApps = apps.filter(a => (f2 === 'all' || (f2 === 'inst' ? a.v : state(a) === 'upd')) && (!term || (a.name + ' ' + (a.desc || '')).toLowerCase().includes(term)));
+    const open = $('#libMore').classList.contains('is-open');
+    $('#libMeta').textContent = `${libApps.length} uygulama`;
+    $('#libMore').innerHTML = `<div class="lgrid">${libApps.map((a, i) => { const st = state(a), q = inQ(a.id); return `
+      <article class="lcard ${i >= 10 ? 'cu-extra' : ''}">
+        <div class="art art-${a.art} ${a.img ? 'has-img' : ''}" ${a.img ? `style="--tile-bg:${a.bg};--tile-ink:${a.ink}"` : ''}>${a.img ? appIco(a, 'contain') : ic(a.icon, 'glyph') + `<span class="ic">${ic(a.icon)}</span>`}
+          ${{ ok: a.run ? '<span class="cu-dot is-pos">Açık</span>' : '', upd: '<span class="cu-dot is-warn">Güncelleme</span>', none: '', dl: '<span class="cu-dot is-pos">İndiriliyor</span>' }[st]}</div>
+        <div class="bd"><b>${a.name}</b><span class="cu-meta">${a.desc ? a.desc + ' · ' : ''}${st === 'upd' ? `${a.v} → ${a.next}` : a.v || a.next} · ${gb(a.mb)}</span></div>
+        <div class="ft">${q ? `<div class="cu-progress"><i style="--v:${q.p}%"></i></div>` : `<span class="cu-meta">${st === 'none' ? 'Yüklü değil' : a.used || ''}</span>`}${btnFor(a)}</div>
+      </article>`; }).join('')}</div>` +
+      (libApps.length > 10 ? `<button class="cu-morebtn" type="button" aria-expanded="${open}"><span class="cu-m">${libApps.length - 10} daha</span><span class="cu-l">Daha az</span></button>` : '');
+
+    // downloads
+    $('#qMeta').textContent = queue.length ? `${queue.length} aktif` : 'Kuyruk boş';
+    $('#pauseAll').hidden = !queue.length;
+    $('#qList').innerHTML = queue.length ? queue.map(q => { const a = byId[q.id]; return `
+      <li class="cu-row"><span class="cu-ico art-${a.art}">${appIco(a)}</span>
+        <div><b>${a.name} ${a.next}</b><div class="cu-progress"><i style="--v:${q.p}%"></i></div><span class="cu-meta">${eta(q, a)}</span></div>
+        <span class="speed">${q.paused ? '—' : q.speed.toFixed(1).replace('.', ',') + ' MB/s'}</span>
+        <span style="display:flex;gap:var(--s-2)"><button type="button" class="cu-iconbtn is-sm" data-act="${a.id}" aria-label="${q.paused ? 'Sürdür' : 'Duraklat'}">${ic(q.paused ? 'i-play' : 'i-pause', 'is-fill')}</button><button type="button" class="cu-iconbtn is-sm" data-cancel="${a.id}" aria-label="İptal">${ic('i-x')}</button></span></li>`; }).join('')
+      : `<li class="cu-row"><span class="cu-ico art-5">${ic('i-check')}</span><div><b>Kuyruk boş</b><span class="cu-meta">Her şey güncel</span></div></li>`;
+    $('#hist').innerHTML = history.slice(0, 10).map(x => `<li><b>${x.t}</b><span class="cu-meta">${x.m}</span></li>`).join('');
+
+    // rail dot + quick launch (installed, last used first)
+    document.querySelector('.dl-dot').hidden = !queue.some(q => !q.paused);
+    const fit = fitFriends();
+    $('#friends').classList.toggle('is-full', friends.length > fit);
+    setHTML($('#friends'), `<button type="button" class="who is-me is-${me.st}" data-umenu aria-expanded="${!$('#umenu').hidden}" aria-label="Kullanıcı menüsü: ${me.name}, ${ST[me.st]}" data-cu-tip="${me.name}">${me.ini}</button><hr>` +
+      friends.slice(0, fit).map(f => `<button type="button" data-chat="${f.name}" aria-pressed="${chatWith === f.name}" class="who art-${f.art} is-${f.st}" aria-label="${f.name}, ${f.now}" data-cu-tip="${f.name} · ${f.now}">${f.name[0]}</button>`).join('') +
+      `<button type="button" class="who add" data-new="chat" aria-label="Yeni sohbet" data-cu-tip="Yeni sohbet">${ic('i-plus')}</button>`);
+    setHTML($('#groups'), `<span class="rh" aria-hidden="true">${ic('i-messages-square')}</span>` +
+      groups.slice(0, 3).map(g => `<button type="button" data-chat="${g.name}" aria-pressed="${chatWith === g.name}" class="who grp art-${g.art}" aria-label="${g.name}${g.unread ? `, ${g.unread} yeni` : ''}" data-cu-tip="${g.name}">${g.ini}${g.unread ? `<span class="n">${g.unread}</span>` : ''}</button>`).join('') +
+      `<button type="button" class="who grp add" data-new="group" aria-label="Yeni grup" data-cu-tip="Yeni grup">${ic('i-plus')}</button>`);
+  }
+
+  // ---------------- chat ----------------
+  let chatWith = null, replyT;
+  const esc = t => t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const drawChat = typing => {
+    const log = convo[chatWith] || (convo[chatWith] = []), isGrp = groups.some(g => g.name === chatWith);
+    $('#chatLog').innerHTML = (log.length ? '' : '<span class="cu-meta" style="justify-self:center">Henüz mesaj yok</span>') + log.map(([who, t], i) => {
+      const mine = who === 'me', head = isGrp && !mine && (i === 0 || log[i - 1][0] !== who);
+      return (head ? `<span class="cu-msg-meta">${who}</span>` : '') + `<div class="cu-msg ${mine ? 'is-me' : ''}">${esc(t)}</div>`;
+    }).join('') + (typing ? '<div class="cu-typing" aria-label="Yazıyor"><i></i><i></i><i></i></div>' : '');
+    $('#chatLog').scrollTop = 1e6;
+  };
+  function openChat(name) {
+    if (chatWith === name && !$('#chat').hidden) { closeChat(); return; }
+    chatWith = name; clearTimeout(replyT);
+    const f = friends.find(x => x.name === name), g = groups.find(x => x.name === name);
+    const av = $('#chatAv');
+    av.className = `who art-${(f || g).art} ${g ? 'grp' : 'is-' + f.st}`;
+    av.textContent = g ? g.ini : name[0];
+    $('#chatName').textContent = name;
+    $('#chatSt').textContent = g ? `${g.members || { 'Beta test': 6, 'Tasarım': 4, 'Arena klan': 9 }[name] || 5} üye` : f.now;
+    if (g) g.unread = 0;
+    closePanels(true); $('#chat').hidden = false; drawChat(false); render();
+    $('#chatIn').focus();
+  }
+  function closeChat() { $('#chat').hidden = true; chatWith = null; clearTimeout(replyT); render(); }
+  $('#chatClose').addEventListener('click', closeChat);
+  document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('#notif').hidden) toggleNotif(false); else if (!$('#umenu').hidden) toggleMenu(false); else if (!$('#chat').hidden) closeChat(); else closePanels(); });
+
+  // ---------------- notifications ----------------
+  function drawNotifs() {
+    const n = notifs.filter(x => x.unread).length;
+    $('#bellN').textContent = n; $('#bellN').hidden = !n;
+    $('#bell').setAttribute('aria-label', n ? `Bildirimler, ${n} yeni` : 'Bildirimler');
+    $('#readAll').hidden = !n;
+    $('#nList').innerHTML = notifs.length ? notifs.map((x, i) => `<li class="cu-row ${x.unread ? '' : 'is-read'}" data-notif="${i}" role="button" tabindex="0">
+      <span class="cu-ico">${ic(x.icon)}</span><div><b>${x.t}</b><span class="cu-meta">${x.m}</span></div>${x.unread ? '<i class="cu-new" aria-label="Okunmadı"></i>' : '<span></span>'}</li>`).join('')
+      : '<li class="cu-meta empty">Bildirim yok</li>';
+  }
+  function toggleNotif(force) {
+    const p = $('#notif'), open = force === undefined ? p.hidden : force;
+    if (open === !p.hidden) return;
+    if (open) {   // drop from the bell, right edges aligned
+      const w = $('.win').getBoundingClientRect(), b = $('#bell').getBoundingClientRect();
+      const pw = Math.min(340, w.width - 32);   // right edge under the bell, but never off the window
+      p.style.top = (b.bottom - w.top + 8) + 'px'; p.style.left = Math.max(16, Math.min(b.right - w.left - pw, w.width - pw - 16)) + 'px'; p.style.width = pw + 'px';
+      toggleMenu(false);
+    }
+    p.hidden = !open; $('#bell').setAttribute('aria-expanded', open);
+  }
+  const openNotif = i => { const x = notifs[i]; x.unread = false; drawNotifs(); toggleNotif(false); x.open(); };
+  $('#nList').addEventListener('keydown', e => { const r = e.target.closest('[data-notif]'); if (r && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openNotif(+r.dataset.notif); } });
+  drawNotifs();
+
+  // ---------------- user menu ----------------
+  function toggleMenu(force) {
+    const m = $('#umenu'), open = force === undefined ? m.hidden : force;
+    if (open === !m.hidden) return;
+    m.hidden = !open;
+    document.querySelectorAll('[data-umenu]').forEach(b => b.setAttribute('aria-expanded', open));
+    if (open) { $('#uSt').textContent = ST[me.st]; toggleNotif(false); }
+  }
+  $('#stSeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    $('#stSeg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    me.st = b.dataset.st; $('#uSt').textContent = ST[me.st]; render();
+  });
+
+  // ---------------- new chat / new group ----------------
+  const contacts = [...friends.map(f => f.name), 'Ayşe', 'Mert', 'Ece'];
+  const extra = { Ayşe: { st: 'off', now: 'Dün', art: 2 }, Mert: { st: 'on', now: 'Çevrimiçi', art: 5 }, Ece: { st: 'away', now: 'Uzakta', art: 1 } };
+  const person = n => friends.find(f => f.name === n) || { name: n, ...extra[n] };
+  function closePanels(keepChat) {
+    $('#newChat').hidden = $('#newGroup').hidden = true;
+    if (!keepChat && !$('#chat').hidden) closeChat();
+  }
+  function openNew(kind) {
+    if (!$('#chat').hidden) closeChat();
+    closePanels(true);
+    if (kind === 'chat') { $('#ncQ').value = ''; drawContacts(); $('#newChat').hidden = false; $('#ncQ').focus(); }
+    else {
+      $('#ngName').value = '';
+      $('#ngList').innerHTML = friends.map(f => `<label class="cu-check"><input type="checkbox" value="${f.name}">${f.name}</label>`).join('');
+      $('#ngCreate').disabled = true; $('#newGroup').hidden = false; $('#ngName').focus();
+    }
+  }
+  function drawContacts() {
+    const t = $('#ncQ').value.trim().toLocaleLowerCase('tr');
+    const list = contacts.filter(n => !t || n.toLocaleLowerCase('tr').includes(t)).map(person);
+    $('#ncList').innerHTML = list.length ? list.map(p => `<li class="cu-row" data-pick="${p.name}" role="button" tabindex="0"><span class="av art-${p.art}">${p.name[0]}</span><div><b>${p.name}</b></div>
+      <span class="cu-dot ${p.st === 'on' ? 'is-pos' : p.st === 'away' ? 'is-warn' : ''}">${p.now}</span></li>`).join('')
+      : '<li class="cu-meta" style="padding:var(--s-2)">Kimse bulunamadı</li>';
+  }
+  function startChat(name) {
+    if (!friends.some(f => f.name === name)) friends.splice(1, 0, { name, ...extra[name] });   // new contact goes near the top of the rail
+    else { const i = friends.findIndex(f => f.name === name); if (i >= fitFriends()) friends.unshift(...friends.splice(i, 1)); }
+    convo[name] = convo[name] || [];
+    $('#newChat').hidden = true; openChat(name);
+  }
+  $('#ncQ').addEventListener('input', drawContacts);
+  $('#ncList').addEventListener('keydown', e => { const r = e.target.closest('[data-pick]'); if (r && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); startChat(r.dataset.pick); } });
+  const ngValid = () => $('#ngName').value.trim() && $('#ngList').querySelector('input:checked');
+  $('#newGroup').addEventListener('input', () => $('#ngCreate').disabled = !ngValid());
+  $('#ngCreate').addEventListener('click', () => {
+    if (!ngValid()) return;
+    const name = $('#ngName').value.trim(), members = [...$('#ngList').querySelectorAll('input:checked')].map(i => i.value);
+    const ini = name.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toLocaleUpperCase('tr') || name.slice(0, 2).toLocaleUpperCase('tr');
+    groups.unshift({ name, ini, unread: 0, art: 1 + groups.length % 6, members: members.length + 1 });
+    convo[name] = [[members[0], `${name} grubuna hoş geldiniz`]];
+    $('#newGroup').hidden = true; openChat(name); toast(`${name} oluşturuldu`);
+  });
+  $('#chatForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const t = $('#chatIn').value.trim(); if (!t || !chatWith) return;
+    const to = chatWith, log = convo[to];
+    log.push(['me', t]); $('#chatIn').value = ''; drawChat(false);
+    const f = friends.find(x => x.name === to), g = groups.find(x => x.name === to);
+    if (f && f.st === 'off') return;   // offline friends do not answer
+    clearTimeout(replyT);
+    replyT = setTimeout(() => { if (chatWith === to) drawChat(true);
+      replyT = setTimeout(() => { log.push([g ? friends[Math.floor(Math.random() * 4)].name : 't', replies[Math.floor(Math.random() * replies.length)]]); if (chatWith === to) drawChat(false); }, 1400);
+    }, 500);
+  });
+
+  // statistic blob: a few translucent wavy rings in the logo colours, a dark core with the total
+  const wavy = (R, amp, k, ph) => {
+    let d = '';
+    for (let i = 0; i <= 144; i++) {
+      const t = i / 144 * Math.PI * 2, r = R * (1 + amp * Math.sin(k * t + ph) + amp * .45 * Math.sin((k + 2) * t - ph * 1.7));
+      d += (i ? 'L' : 'M') + (r * Math.cos(t)).toFixed(1) + ' ' + (r * Math.sin(t)).toFixed(1);
+    }
+    return d + 'Z';
+  };
+  $('#blob').innerHTML = `<svg viewBox="-110 -110 220 220" aria-hidden="true">
+      <defs><linearGradient id="stGrad" x1="0" y1="0" x2=".35" y2="1"><stop offset="0" stop-color="var(--st-1)"/><stop offset=".5" stop-color="var(--st-2)"/><stop offset="1" stop-color="var(--st-3)"/></linearGradient></defs>
+      ${Array.from({ length: 6 }, (_, j) => `<g transform="rotate(${j * 9})"><path class="lay" style="--j:${j}" d="${wavy(90 - j * 1.6, .1, 5, j * .42)}"/></g>`).join('')}
+      <circle class="core" r="74"/><circle class="line" r="66"/>
+    </svg><div class="mid"><span>Toplam kullanım</span><b id="blobTotal"></b></div>`;
+
+  // tile art: topographic rings + a few marks, varied per card (flat, one hue)
+  const tileArt = i => {
+    const cx = [68, 32, 58, 40, 74, 36][i % 6], cy = [34, 28, 52, 38, 30, 48][i % 6], rot = -24 + (i * 17) % 60;
+    const rings = Array.from({ length: 11 }, (_, k) => `<ellipse cx="${cx}" cy="${cy}" rx="${8 + k * 8.5}" ry="${6 + k * 7}" transform="rotate(${rot} ${cx} ${cy})"/>`).join('');
+    return `<svg class="tart" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g class="topo">${rings}</g>
+      <g class="marks"><path d="M13 12 v5 m-2.5 -2.5 h5"/><circle cx="14.5" cy="25" r="1.2"/><path d="M22 14 h3"/></g></svg>`;
+  };
+  // shelf: fade the card cut by the edge, flip the arrow at the end
+  const shelf = () => {
+    const t = $('#tiles'), r = t.getBoundingClientRect(), btn = $('#shelfNext');
+    [...t.children].forEach(c => { const b = c.getBoundingClientRect(); c.classList.toggle('is-peek', b.right > r.right + 1 || b.left < r.left - 1); });
+    btn.hidden = t.scrollWidth <= t.clientWidth + 2;
+    const end = t.scrollLeft + t.clientWidth >= t.scrollWidth - 2;
+    if (btn.dataset.end !== String(end)) {
+      btn.dataset.end = end;
+      btn.classList.toggle('is-start', end);
+      btn.innerHTML = ic(end ? 'i-chevron-left' : 'i-chevron-right');
+      btn.setAttribute('aria-label', end ? 'Başa dön' : 'Sonraki uygulamalar');
+    }
+  };
+
+  const eta = (q, a) => {
+    if (q.paused) return `Duraklatıldı · %${Math.floor(q.p)}`;
+    if (!q.speed) return 'Bekliyor';
+    const s = (a.mb * (100 - q.p) / 100) / q.speed;
+    return `${gb(Math.round(a.mb * q.p / 100))} / ${gb(a.mb)} · ${s > 60 ? Math.ceil(s / 60) + ' dk' : Math.ceil(s) + ' sn'} kaldı`;
+  };
+  const CAT = { lfg: 'Oyun', algo: 'Oyun', market: 'Oyun', walletbud: 'Finans', doshub: 'Uygulama', kilibik: 'Uygulama', forge: 'Tasarım', deck: 'Müzik', trail: 'Harita', snap: 'Fotoğraf', ledger: 'Finans', code: 'Geliştirici', pulse: 'Sağlık', chat: 'Sohbet', note: 'Not', arena: 'Oyun', sky: 'Hava', fit: 'Spor' };
+  const left = (q, a) => {
+    if (q.paused) return 'Duraklatıldı';
+    if (!q.speed) return 'Bekliyor';
+    const sec = Math.ceil((a.mb * (100 - q.p) / 100) / q.speed), h = Math.floor(sec / 3600), m = Math.ceil(sec % 3600 / 60);
+    return h ? `${h} sa ${m} dk` : sec >= 60 ? `${m} dk` : `${sec} sn`;
+  };
+  const dlCard = q => { const a = byId[q.id]; return `
+    <div class="dlc" style="--w:${(36 + q.p * .64).toFixed(1)}%">
+      <div class="fill" aria-hidden="true"><svg class="wave" viewBox="0 0 84 100" preserveAspectRatio="none">
+        <path class="wf" d="M0 0 H10 C26 18 2 34 16 52 C28 68 6 84 18 100 H0 Z"/>
+        <path class="wl" d="M14 0 C30 18 6 34 20 52 C32 68 10 84 22 100"/><path class="wl" d="M26 0 C44 20 16 36 32 54 C46 70 22 86 36 100"/><path class="wl" d="M40 0 C60 22 28 38 46 56 C62 72 34 86 50 100"/>
+      </svg></div>
+      <span class="dtile">${appIco(a)}</span>
+      <div class="nm"><b>${a.name}</b><span class="cu-chip">${CAT[a.id] || 'Uygulama'}</span></div>
+      <div class="tm"><b>${left(q, a)}</b><span>${gb(Math.round(a.mb * q.p / 100))} / ${gb(a.mb)}</span></div>
+      <div class="btns"><button type="button" class="cb pp" data-act="${a.id}" aria-label="${q.paused ? 'Sürdür' : 'Duraklat'}">${ic(q.paused ? 'i-play' : 'i-pause', 'is-fill')}</button><button type="button" class="cb x" data-cancel="${a.id}" aria-label="İptal">${ic('i-x', 'is-bold')}</button></div>
+    </div>`; };
+
+  // feature art: each slide's character rises out of the card (transparent WebP, inlined by build.mjs). Measured on each image:
+  //   edge: the card colour ends at this fraction of the drawn width - that column is opaque from the card top to the bottom
+  //   R: the rightmost opaque pixel of each 1/80 of the height (top 40%), as a fraction of the width - where the slider bars can go
+  const ARTS = {
+    robot: { src: 'assets/feature-robot.webp', w: 525, h: 640, edge: .57,
+      R: [.592, .596, .59, .589, .592, .596, .6, .602, .64, .651, .661, .663, .674, .676, .68, .707, .781, .779, .777, .773, .783, .796, .804, .84, .844, .846, .84, .848, .855, .863, .87, .878] },
+    fox: { src: 'assets/feature-fox.webp', w: 666, h: 640, edge: .405,
+      R: [.42, .423, .425, .428, .431, .649, .655, .661, .667, .673, .679, .683, .689, .695, .701, .707, .712, .718, .724, .73, .734, .74, .746, .752, .755, .737, .695, .703, .709, .716, .718, .712] },
+    lfg: { src: 'assets/feature-lfg.webp', w: 431, h: 640, edge: .5, ov: 130,
+      R: [.622, .687, .715, .74, .768, .78, .787, .794, .8, .807, .814, .814, .798, .814, .814, .81, .807, .812, .812, .81, .81, .807, .805, .798, .791, .784, .745, .696, .712, .719, .719, .719] },
+  };
+  const FEAT_ART = { trail: 'fox', lfg: 'lfg' };   // app id → art; the rest use the robot
+  const artOf = id => ARTS[FEAT_ART[id] || 'robot'];
+  const curArt = () => artOf(FEAT[featIdx]);
+  function placeFeatureBg() {
+    const f = $('#feature'), img = f.querySelector('.cu-cutout'), A = curArt();
+    if (!img || matchMedia('(max-width: 720px)').matches) { f.style.removeProperty('--bg-end'); f.style.removeProperty('--art-ov'); return; }
+    f.style.setProperty('--art-ov', (A.ov || 0) + 'px');   // a bigger picture: it grows downward and is cut off at the card's bottom edge
+    const drawn = Math.min(img.clientWidth, img.clientHeight * A.w / A.h);   // object-fit: contain, right-aligned
+    f.style.setProperty('--bg-end', (drawn * (1 - A.edge)).toFixed(1) + 'px');
+    f.classList.toggle('bg-round', !!A.round);   // a narrow character does not cover the card's end: give it a proper rounded one
+    placeFeatureDots();
+  }
+  // the slider bars go in the empty corner right of the character's head; how empty it is depends on the drawn size.
+  function placeFeatureDots() {
+    const f = $('#feature'), img = f.querySelector('.cu-cutout'), d = $('#fdots');
+    if (!img || !d.offsetWidth || matchMedia('(max-width: 720px)').matches) { d.style.removeProperty('top'); d.style.removeProperty('right'); return; }
+    const A = curArt(), ratio = A.w / A.h, rh = img.clientHeight, rw = Math.min(img.clientWidth, rh * ratio), dh = rw / ratio;   // contain, bottom right: a width-bound image is drawn lower
+    const top = f.clientHeight + (A.ov || 0) - dh;   // the drawn image's top, from the card top (negative: it rises above)
+    const free = y => rw * (1 - (A.R[Math.floor((y - top) / dh * 80)] ?? 1));
+    const fit = () => {
+      const need = d.offsetWidth + 8 + 8;   // bars + right inset + air
+      for (let y = 12; y >= -8; y -= 2) {   // y: the bars' top, from the card top; above -8 the search box is near
+        let m = Infinity; for (let r = y - 3; r <= y + 8; r++) m = Math.min(m, free(r));
+        if (m >= need) return y;
+      }
+      return null;
+    };
+    let y = null;
+    for (const size of ['', 'is-sm', 'is-xs']) {   // a smaller character leaves a smaller corner: shorter bars
+      d.classList.remove('is-sm', 'is-xs'); if (size) d.classList.add(size);
+      if ((y = fit()) !== null) break;
+    }
+    d.style.right = y === null ? (rw + 16) + 'px' : '';   // no free corner at all (narrow character): the bars sit left of the picture, on the card
+    d.style.top = ((y ?? 12) - 8) + 'px';   // the button has 8px of hit area above the bar
+  }
+
+  // feature carousel: fixed list, next one when the active bar has filled (paused on hover; no auto-advance with reduced motion)
+  const FEAT = [...apps.filter(a => state(a) === 'upd').slice(0, 2).map(a => a.id), 'lfg'];
+  let featIdx = 0, featBusy = false;
+  function featShow(i) {   // no animation: first paint, deep links
+    const img = $('#feature .cu-cutout'), A = artOf(FEAT[i]);
+    featIdx = i;
+    if (!img.src.endsWith(A.src)) { img.src = A.src; img.width = A.w; img.height = A.h; }
+    render(); placeFeatureBg();
+  }
+  function featGo(i) {
+    const b = $('#fbody'), img = $('#feature .cu-cutout'), f = $('#feature'), swap = artOf(FEAT[i]) !== curArt();
+    if (featBusy || i === featIdx) return;
+    featBusy = true;
+    for (const el of swap ? [b, img] : [b]) { el.classList.remove('is-in'); el.classList.add('is-out'); }
+    if (swap) { f.classList.remove('bg-in'); f.classList.add('bg-out'); }
+    setTimeout(() => {
+      featShow(i);   // the colour edge jumps to the new character's edge while the card is invisible
+      for (const el of swap ? [b, img] : [b]) { el.classList.remove('is-out'); el.classList.add('is-in'); }
+      if (swap) { f.classList.remove('bg-out'); f.classList.add('bg-in'); }
+      featBusy = false;
+    }, 600);
+  }
+  $('#fdots').addEventListener('animationend', e => { if (e.animationName === 'feat-time') featGo((featIdx + 1) % FEAT.length); });
+
+  // statistic: replayed every time the home page is shown
+  let countUntil = 0;
+  function statIn() {
+    const c = $('#blob').closest('.statc'), el = $('#blobTotal'), to = +el.dataset.v || 0, t0 = performance.now(), dur = 1300;
+    c.classList.remove('is-in'); void c.offsetWidth; c.classList.add('is-in');
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    countUntil = t0 + dur;
+    const step = t => { const k = Math.min(1, (t - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))).toLocaleString('tr') + ' sa'; if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+    setTimeout(() => { el.textContent = to.toLocaleString('tr') + ' sa'; }, dur + 60);   // lands on the exact total even if frames were skipped
+  }
+
+  // ---------------- simulated download engine ----------------
+  setInterval(() => {
+    let changed = false;
+    queue.forEach((q, i) => {
+      if (q.paused || i > 0) { if (i > 0) q.speed = 0; return; }   // one at a time
+      q.speed = 18 + Math.random() * 14;
+      q.p = Math.min(100, q.p + q.speed / byId[q.id].mb * 100 * 8);   // demo: 8x faster than the speed shown
+      changed = true;
+      if (q.p >= 100) {
+        const a = byId[q.id], wasNew = !a.v;
+        a.v = a.next; delete a.next; a.used = 'Az önce';
+        queue.splice(i, 1);
+        history.unshift({ t: `${a.name} ${a.v} ${wasNew ? 'kuruldu' : 'güncellendi'}`, m: 'Az önce' });
+        toast(`${a.name} ${wasNew ? 'kuruldu' : 'güncellendi'}`, { label: 'Aç', run: () => launch(a.id) });
+      }
+    });
+    if (changed && !pressing) render();
+  }, 600);
+  let pressing = false;   // never rebuild the DOM between pointerdown and click
+  addEventListener('pointerdown', () => pressing = true);
+  addEventListener('pointerup', () => setTimeout(() => pressing = false, 0));
+
+  // ---------------- events ----------------
+  document.addEventListener('click', e => {
+    if (!$('#umenu').hidden && !e.target.closest('#umenu, [data-umenu]')) toggleMenu(false);   // any click outside closes the menu
+    if (!$('#notif').hidden && !e.target.closest('#notif, #bell')) toggleNotif(false);
+    if (e.target.closest('#bell')) { toggleNotif(); return; }
+    if (e.target.closest('#readAll')) { notifs.forEach(x => x.unread = false); drawNotifs(); return; }
+    const nr = e.target.closest('[data-notif]'); if (nr) { openNotif(+nr.dataset.notif); return; }
+    const v = e.target.closest('[data-view]');
+    if (v) { e.preventDefault(); toggleMenu(false); go(v.dataset.view); return; }
+    if (e.target.closest('#shelfNext')) { const t = $('#tiles'); $('#shelfNext').dataset.end === 'true' ? t.scrollTo({ left: 0 }) : t.scrollBy({ left: t.firstElementChild.offsetWidth + 16 }); return; }
+    const pk = e.target.closest('.tile.is-peek'); if (pk) { pk.scrollIntoView({ inline: 'end', block: 'nearest' }); return; }   // a faded card first slides in
+    const fd = e.target.closest('[data-feat]'); if (fd) { featGo(+fd.dataset.feat); return; }
+    const a = e.target.closest('[data-act]'); if (a) { act(a.dataset.act); return; }
+    const c = e.target.closest('[data-cancel]'); if (c) { cancel(c.dataset.cancel); return; }
+    const n = e.target.closest('[data-notes]'); if (n) { toast(`${byId[n.dataset.notes].name} · 4 düzeltme, 2 yenilik`); return; }
+    if (e.target.closest('#check')) { toast('Tüm uygulamalar denetlendi'); return; }
+    if (e.target.closest('[data-umenu]')) { toggleMenu(); return; }
+    const um = e.target.closest('[data-um]'); if (um) { toggleMenu(false); toast({ profile: 'Profil sayfası yakında', friends: `${friends.length} arkadaş`, logout: 'Çıkış yapıldı (demo)' }[um.dataset.um]); return; }
+    const nw = e.target.closest('[data-new]'); if (nw) { openNew(nw.dataset.new); return; }
+    if (e.target.closest('[data-closep]')) { closePanels(); return; }
+    const pick = e.target.closest('[data-pick]'); if (pick) { startChat(pick.dataset.pick); return; }
+    const w = e.target.closest('.rcol .who[data-chat]'); if (w) { openChat(w.dataset.chat); return; }
+    if (e.target.closest('#pauseAll')) { const all = queue.every(q => q.paused); queue.forEach(q => q.paused = !all); render(); return; }
+    const cap = e.target.closest('[data-win]'); if (cap) { window.forceStudio ? window.forceStudio[cap.dataset.win]() : toast('Windows penceresinde çalışır'); }
+  });
+  $('#libSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; $('#libSeg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); });
+  $('#themeSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; $('#themeSeg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); document.documentElement.dataset.calm = b.dataset.t; });
+  document.querySelectorAll('.cu-settings .cu-seg:not(#themeSeg)').forEach(s => s.addEventListener('click', e => { const b = e.target.closest('button'); if (b) s.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); }));
+  $('#q').addEventListener('keydown', e => { if (e.key === 'Enter') { go('library'); render(); } });
+  $('#q').addEventListener('input', () => render());
+
+  function go(name) {
+    document.querySelectorAll('.view').forEach(v => v.hidden = v.id !== 'v-' + name);
+    document.querySelectorAll('.cu-rail.main a').forEach(a => a.dataset.view === name ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+    try { window.history.replaceState(null, '', '#' + name); } catch (_) {}
+    if (name === 'home') { $('#tiles').scrollLeft = 0; statIn(); }
+  }
+
+  render();
+  new ResizeObserver(() => render()).observe($('.rcol'));   // the column height decides how many friends fit
+  $('#tiles').addEventListener('scroll', () => requestAnimationFrame(shelf), { passive: true });
+  new ResizeObserver(shelf).observe($('#tiles'));
+  new ResizeObserver(placeFeatureBg).observe($('#feature'));
+  $('#feature .cu-cutout').addEventListener('load', placeFeatureBg); placeFeatureBg();   // window height changes → refit the rail
+  // deep link: #view or #view.state (state = menu | chat | group | newchat | newgroup) - also used by tools/shots.mjs
+  const [start0, state0] = (location.hash || '#home').slice(1).split('.');
+  if (['home', 'library', 'downloads', 'settings'].includes(start0)) go(start0);
+  if (/^slide\d$/.test(state0)) featShow(Math.min(FEAT.length, +state0.slice(5)) - 1);
+  ({ notif: () => toggleNotif(true), menu: () => toggleMenu(true), chat: () => openChat('Zeynep'), group: () => openChat('Arena klan'), newchat: () => openNew('chat'), newgroup: () => openNew('group') }[state0] || (() => {}))();
+})();
+</script>

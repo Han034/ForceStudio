@@ -1,0 +1,16 @@
+{
+  "name": "force-studio",
+  "productName": "Force Studio",
+  "version": "1.0.0",
+  "description": "Force Studio Windows client - download and update our apps",
+  "main": "app/main.js",
+  "private": true,
+  "scripts": {
+    "build:ui": "node design/build.mjs",
+    "shots": "node design/build.mjs && node design/tools/shots.mjs",
+    "start": "node design/build.mjs && electron ."
+  },
+  "devDependencies": {
+    "electron": "^38.0.0"
+  }
+}

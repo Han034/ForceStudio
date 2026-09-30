@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>layout check</title>
+<style>html, body { margin: 0; } iframe { border: 0; display: block; }</style>
+</head>
+<body>
+<!-- Loads client.html in an iframe of the given size, then lists layout problems in #out.
+     check.html?w=1366&h=768&s=home.menu   (s = the client's #hash; read with chrome --dump-dom) -->
+<pre id="out">pending</pre>
+<script>
+const q = new URLSearchParams(location.search);
+const W = +q.get('w') || 1320, H = +q.get('h') || 860, S = q.get('s') || 'home';
+const f = document.createElement('iframe');
+f.width = W; f.height = H; f.src = '../client.html#' + S;
+document.body.prepend(f);
+
+// decorative or intentionally overflowing things: never reported
+const IGNORE = '.cu-cutout, .wave, .glyph, .n, .cu-badge > b, .cu-seg-thumb, .fill, svg *, [hidden], .cu-toast';
+
+f.onload = () => setTimeout(() => {
+  const d = f.contentDocument, win = f.contentWindow, issues = [];
+  // entrance animations are judged at their end state (the carousel timer keeps running)
+  for (const an of d.getAnimations()) if (!['feat-time', 'feat-out', 'art-out'].includes(an.animationName)) try { an.finish(); } catch (_) {}
+  const name = el => {
+    let s = el.tagName.toLowerCase();
+    if (el.id) s += '#' + el.id;
+    const c = [...el.classList].slice(0, 3).join('.'); if (c) s += '.' + c;
+    const t = (el.getAttribute('aria-label') || el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 28);
+    return t ? `${s} "${t}"` : s;
+  };
+  const visible = el => { const cs = win.getComputedStyle(el); return cs.display !== 'none' && cs.visibility !== 'hidden' && el.getClientRects().length > 0; };
+  const clips = cs => /(hidden|auto|scroll|clip)/.test(cs.overflow + cs.overflowX + cs.overflowY);
+
+  // 1. horizontal page scroll
+  if (d.documentElement.scrollWidth > W + 1) issues.push(`PAGE scrolls sideways: ${d.documentElement.scrollWidth}px > ${W}px`);
+
+  const all = [...d.querySelectorAll('.win *')].filter(el => !el.closest(IGNORE) && visible(el));
+  const winBox = d.querySelector('.win').getBoundingClientRect();
+  for (const el of all) {
+    const b = el.getBoundingClientRect();
+    if (!b.width || !b.height) continue;
+    // 2. child sticking out of a parent that does not clip or scroll (the rail bug)
+    let p = el.parentElement;
+    while (p && win.getComputedStyle(p).display === 'contents') p = p.parentElement;   // display:contents has no box: measure against the real parent
+    const pcs = p && win.getComputedStyle(p), cs = win.getComputedStyle(el);
+    if (p && !clips(pcs) && cs.position !== 'absolute' && cs.position !== 'fixed' && p !== d.body) {
+      const pb = p.getBoundingClientRect(), o = 1.5;
+      const out = [b.left < pb.left - o && 'left', b.right > pb.right + o && 'right', b.top < pb.top - o && 'top', b.bottom > pb.bottom + o && 'bottom'].filter(Boolean);
+      if (out.length && !p.matches('.tiles, .cu-list, .lgrid') && !el.matches('.tiles, .shelf')) issues.push(`OVERFLOW ${name(el)} sticks out ${out.join('+')} of ${name(p)} by ${Math.round(Math.max(pb.left - b.left, b.right - pb.right, pb.top - b.top, b.bottom - pb.bottom))}px`);
+    }
+    // 3. something outside the window
+    if ((b.right > W + 1 || b.left < -1) && !el.closest('.tiles')) issues.push(`OUTSIDE viewport: ${name(el)} (${Math.round(b.left)}..${Math.round(b.right)} of ${W})`);
+    if (b.right > winBox.right + 1 || b.bottom > winBox.bottom + 1 || b.left < winBox.left - 1) {
+      const clipper = el.parentElement && el.parentElement.closest('.view, .tiles, .cu-chat, .pbody');
+      if (!clipper) issues.push(`OUTSIDE window: ${name(el)}`);
+    }
+    // 4. text cut off (clipped without an ellipsis)
+    if (el.children.length === 0 && el.textContent.trim() && el.scrollWidth > el.clientWidth + 1 && clips(cs) && cs.textOverflow !== 'ellipsis')
+      issues.push(`TEXT cut: ${name(el)} (${el.scrollWidth} > ${el.clientWidth})`);
+    if (el.children.length === 0 && el.textContent.trim() && cs.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth + 1)
+      issues.push(`ELLIPSIS: ${name(el)}`);
+  }
+  // 5. overlapping siblings in the rails and card grids
+  for (const box of d.querySelectorAll('.cu-rail, .lgrid, .tiles, .ucards, .top, .tile, .dlc, .cu-feature, .lcard, .lcard .ft, .ucard .cu-row, .cu-pagehead, .umenu, .chatw')) {
+    const k = [...box.children].filter(x => visible(x) && !x.matches(IGNORE) && !x.matches('.fill, .cu-cutout, .glyph, .tart, .tphoto')).map(x => [x, x.getBoundingClientRect()]);
+    for (let i = 0; i < k.length; i++) for (let j = i + 1; j < k.length; j++) {
+      const [a, A] = k[i], [c, C] = k[j];
+      // inside cards, things must also keep a 4px gap (touching reads as broken)
+      const g = box.matches('.tile, .dlc, .cu-feature, .lcard') ? -4 : 1;
+      if (A.left < C.right - g && C.left < A.right - g && A.top < C.bottom - g && C.top < A.bottom - g)
+        issues.push(`${g < 0 && !(A.left < C.right - 1 && C.left < A.right - 1 && A.top < C.bottom - 1 && C.top < A.bottom - 1) ? 'TOO CLOSE' : 'OVERLAP'} ${name(a)} × ${name(c)}`);
+    }
+  }
+  // 6. home must fit one screen (the reference does); other views may scroll
+  const home = d.querySelector('#v-home');
+  if (W >= 1024 && visible(home) && home.scrollHeight > home.clientHeight + 1) issues.push(`FOLD home needs ${home.scrollHeight - home.clientHeight}px more height (content cut at the bottom)`);
+  // 7. a card whose background token is missing renders transparent
+  const painted = cs => cs.backgroundColor !== 'rgba(0, 0, 0, 0)' || cs.backgroundImage !== 'none';   // a colour or a gradient
+  for (const el of d.querySelectorAll('.cu-feature, .dlc .fill, .tile, .lcard .art, .ucard .cu-ico'))
+    if (visible(el) && !painted(win.getComputedStyle(el)) && !painted(win.getComputedStyle(el, '::before'))) issues.push(`NO BACKGROUND ${name(el)}`);   // the feature paints its colour on ::before
+  // 8. text inside the statistic core must stay inside the dark circle
+  const core = d.querySelector('.blob .core');
+  if (core && visible(core)) {
+    const cb = core.getBoundingClientRect(), cx = cb.left + cb.width / 2, cy = cb.top + cb.height / 2, R = cb.width / 2;
+    for (const el of d.querySelectorAll('.blob .mid > *')) {
+      const b = el.getBoundingClientRect(), far = Math.max(...[[b.left, b.top], [b.right, b.top], [b.left, b.bottom], [b.right, b.bottom]].map(([x, y]) => Math.hypot(x - cx, y - cy)));
+      if (far > R - 2) issues.push(`TEXT outside circle: ${name(el)} (reaches ${Math.round(far)}px, circle radius ${Math.round(R)}px)`);
+    }
+  }
+  // 9. elements that share a data-align group must share their top edge (e.g. the section heads of both columns)
+  const groups = {};
+  for (const el of d.querySelectorAll('[data-align]')) if (visible(el)) (groups[el.dataset.align] ||= []).push(el);
+  for (const [g, els] of Object.entries(groups)) {
+    const tops = els.map(e => e.getBoundingClientRect().top), spread = Math.max(...tops) - Math.min(...tops);
+    const sameRow = els.every(e => e.getBoundingClientRect().left !== els[0].getBoundingClientRect().left);   // stacked on phones: nothing to align
+    if (sameRow && spread > 1) issues.push(`MISALIGNED ${g}: ${els.map(name).join(' / ')} tops differ by ${Math.round(spread)}px`);
+  }
+  // 10. rails: the gaps between consecutive items must be even (a stray margin shows up as one big gap)
+  for (const rail of d.querySelectorAll('.rcol .cu-rail')) {
+    if (!visible(rail)) continue;
+    const k = [...rail.children].filter(visible).map(x => x.getBoundingClientRect());   // the hr divider counts as an item
+    const gaps = k.slice(1).map((b, i) => Math.round(b.top - k[i].bottom));
+    const typical = [...gaps].sort((a, b) => a - b)[Math.floor(gaps.length / 2)];
+    // empty room left at the end of the strip (the last item should end near the bottom padding)
+    const rb = rail.getBoundingClientRect(), padB = parseFloat(win.getComputedStyle(rail).paddingBottom) || 0;
+    const slack = Math.round(rb.bottom - padB - k[k.length - 1].bottom);
+    if (k.length && slack > 10) issues.push(`EMPTY SPACE at the end of ${name(rail)}: ${slack}px under the last item`);
+    gaps.forEach((g, i) => { if (g > typical + 10) issues.push(`UNEVEN GAP in ${name(rail)}: ${g}px before item ${i + 2} (others ~${typical}px)`); });
+  }
+  // 11. the feature art must not cover the card's text or buttons
+  const art = d.querySelector('.cu-feature .cu-cutout');
+  if (art && visible(art)) {
+    const A = art.getBoundingClientRect(), pad = 0.18;   // the image has transparent margins: test its inner 64%
+    const inner = { left: A.left + A.width * pad, right: A.right - A.width * pad, top: A.top + A.height * pad, bottom: A.bottom - A.height * pad };
+    for (const el of d.querySelectorAll('.cu-feature > :not(.cu-cutout, .fdots), .cu-feature .cu-actions > *')) {
+      const b = el.getBoundingClientRect();
+      if (b.width && b.left < inner.right && inner.left < b.right && b.top < inner.bottom && inner.top < b.bottom) issues.push(`ART covers ${name(el)}`);
+    }
+    if (!art.complete || !art.naturalWidth) issues.push('ART image did not load');
+    // the card colour must end where the character is opaque: sample the image along the colour's right edge
+    const F = art.closest('.cu-feature').getBoundingClientRect(), before = win.getComputedStyle(art.closest('.cu-feature'), '::before');
+    const edge = F.right - parseFloat(before.right);
+    if (edge < F.right - 2 && art.naturalWidth) {
+      const cv = document.createElement('canvas'); cv.width = art.naturalWidth; cv.height = art.naturalHeight;
+      const cx2 = cv.getContext('2d'); cx2.drawImage(art, 0, 0);
+      const rw = Math.min(A.width, A.height * art.naturalWidth / art.naturalHeight), left = A.right - rw, sc = art.naturalWidth / rw;
+      let shows = 0;
+      for (let y = F.top + 1; y < F.bottom - 1; y += 2) for (const x of [edge - 1, edge - 2]) {   // square corner: only the vertical edge line itself can show
+        const ix = Math.floor((x - left) * sc), iy = Math.floor((y - (A.bottom - A.height)) * sc);
+        const alpha = ix < 0 || iy < 0 || ix >= cv.width || iy >= cv.height ? 0 : cx2.getImageData(ix, iy, 1, 1).data[3];
+        if (alpha < 200) shows++;
+      }
+      if (shows) issues.push(`CARD EDGE shows beside the character (${shows} points along the edge are not covered)`);
+    }
+    // the slider bars sit in an empty part of the card: none of their pixels may land on the character
+    if (art.naturalWidth) {
+      const cv = document.createElement('canvas'); cv.width = art.naturalWidth; cv.height = art.naturalHeight;
+      const cx2 = cv.getContext('2d'); cx2.drawImage(art, 0, 0);
+      const rw = Math.min(A.width, A.height * art.naturalWidth / art.naturalHeight), dh = rw * art.naturalHeight / art.naturalWidth, left = A.right - rw, top = A.bottom - dh, sc = art.naturalWidth / rw;
+      for (const bar of d.querySelectorAll('.fdots button')) {
+        const r = bar.getBoundingClientRect(); let hit = 0;
+        for (let y = r.top + 8; y < r.bottom - 8; y += 1) for (let x = r.left - 3; x < r.right + 3; x += 2) {
+          const ix = Math.floor((x - left) * sc), iy = Math.floor((y - top) * sc);
+          if (ix >= 0 && iy >= 0 && ix < cv.width && iy < cv.height && cx2.getImageData(ix, iy, 1, 1).data[3] > 40) hit++;
+        }
+        if (hit) issues.push(`SLIDER BAR ${bar.getAttribute('aria-label')} lies on the character (${hit} px)`);
+      }
+    }
+    const clip = art.closest('.view').getBoundingClientRect();   // the view scrolls, so it clips whatever rises above it
+    if (A.top < clip.top - 1) issues.push(`ART clipped at the top by ${Math.round(clip.top - A.top)}px`);
+  }
+  // 12. every image on screen must have loaded
+  for (const img of d.querySelectorAll('.win img')) if (visible(img) && (!img.complete || !img.naturalWidth)) issues.push(`IMAGE did not load: ${name(img.parentElement)}`);
+  // 13. text over a photo card: at most 10% of the area under the title may be close to the title's own lightness
+  for (const tile of d.querySelectorAll('.tile.has-img')) {
+    const img = tile.querySelector('.tphoto'), tt = tile.querySelector('.tt');
+    if (!visible(tile) || !img || !img.naturalWidth || !tt) continue;
+    const I = img.getBoundingClientRect(), T = tt.getBoundingClientRect();
+    const cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+    const g = cv.getContext('2d'); g.drawImage(img, 0, 0);
+    const k = Math.max(I.width / cv.width, I.height / cv.height);   // object-fit: cover
+    const ox = I.left + (I.width - cv.width * k) / 2, oy = I.top + (I.height - cv.height * k) / 2;
+    const [tr, tg, tb] = win.getComputedStyle(tt).color.match(/[\d.]+/g).map(Number), light = (0.2126 * tr + 0.7152 * tg + 0.0722 * tb) / 255 > 0.5;
+    let sum = 0, n = 0;
+    for (let y = T.top; y < T.bottom; y += 2) for (let x = T.left; x < T.left + Math.min(T.width, 120); x += 2) {
+      const ix = Math.floor((x - ox) / k), iy = Math.floor((y - oy) / k);
+      if (ix < 0 || iy < 0 || ix >= cv.width || iy >= cv.height) { n++; continue; }   // outside the image: the tile's own ground (same as the art's)
+      const [r, gg, b] = g.getImageData(ix, iy, 1, 1).data, lum = (0.2126 * r + 0.7152 * gg + 0.0722 * b) / 255; sum += (light ? lum > 0.55 : lum < 0.45) ? 1 : 0; n++;
+    }
+    if (n && sum / n > 0.1) issues.push(`TITLE unreadable on photo: ${name(tt)} (${Math.round(sum / n * 100)}% of the area under it is as ${light ? 'light' : 'dark'} as the text)`);
+  }
+  const err = win.__errors || [];
+  document.getElementById('out').textContent = JSON.stringify({ size: `${W}x${H}`, state: S, checked: all.length, issues: [...new Set(issues)], errors: err });
+}, 1800);
+</script>
+</body>
+</html>
