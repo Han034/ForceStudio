@@ -10,7 +10,7 @@
     "shots": "node design/build.mjs && node design/tools/shots.mjs",
     "start": "node design/build.mjs && electron .",
     "dist": "node design/build.mjs && electron-builder --win --publish never",
-    "release": "node design/build.mjs && electron-builder --win --publish always"
+    "release": "node scripts/release.mjs"
   },
   "devDependencies": {
     "electron": "^38.0.0",
