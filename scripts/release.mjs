@@ -11,7 +11,7 @@ const run = (cmd, opts = {}) => execSync(cmd, { stdio: 'inherit', ...opts });
 const out = cmd => execSync(cmd, { encoding: 'utf8' }).trim();
 
 if (out('git status --porcelain')) throw new Error('Commit your changes first (working tree is not clean).');
-if (out(`gh release list --repo ${repo} --json tagName --jq "map(.tagName)|index(\\"${tag}\\")"`) !== 'null') throw new Error(`${tag} already exists on GitHub - bump "version" in package.json first.`);
+if (JSON.parse(out(`gh release list --repo ${repo} --json tagName`)).some(r => r.tagName === tag)) throw new Error(`${tag} already exists on GitHub - bump "version" in package.json first.`);
 
 run('npm run dist');
 const files = [`out/ForceStudio-Setup-${version}.exe`, `out/ForceStudio-Setup-${version}.exe.blockmap`, 'out/latest.yml'];
