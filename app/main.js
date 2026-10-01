@@ -1,6 +1,7 @@
 // Force Studio - Electron main process. Frameless window; the page draws its own Windows title bar.
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('node:path');
+const { autoUpdater } = require('electron-updater');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -11,6 +12,7 @@ function createWindow() {
     frame: false,
     backgroundColor: '#2a1422', // tint --c-sunken, avoids a white flash before the page paints
     title: 'Force Studio',
+    icon: path.join(__dirname, '..', 'build', 'icon.png'),
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -40,6 +42,8 @@ ipcMain.on('win', (e, action) => {
 
 app.whenReady().then(() => {
   createWindow();
+  // packaged builds check GitHub Releases for a newer version and install it on quit
+  if (app.isPackaged) autoUpdater.checkForUpdatesAndNotify().catch(() => {});
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });
 

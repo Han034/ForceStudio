@@ -8,9 +8,60 @@
   "scripts": {
     "build:ui": "node design/build.mjs",
     "shots": "node design/build.mjs && node design/tools/shots.mjs",
-    "start": "node design/build.mjs && electron ."
+    "start": "node design/build.mjs && electron .",
+    "dist": "node design/build.mjs && electron-builder --win --publish never",
+    "release": "node design/build.mjs && electron-builder --win --publish always"
   },
   "devDependencies": {
-    "electron": "^38.0.0"
+    "electron": "^38.0.0",
+    "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  },
+  "author": "Force Studio",
+  "homepage": "https://github.com/Han034/ForceStudio",
+  "build": {
+    "appId": "com.forcestudio.client",
+    "productName": "Force Studio",
+    "artifactName": "ForceStudio-Setup-${version}.${ext}",
+    "directories": {
+      "output": "out",
+      "buildResources": "build"
+    },
+    "files": [
+      "build/icon.png",
+      "app/**",
+      "design/client.html",
+      "package.json"
+    ],
+    "icon": "build/icon.ico",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Han034",
+        "repo": "ForceStudio"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "createDesktopShortcut": true,
+      "shortcutName": "Force Studio"
+    }
   }
 }

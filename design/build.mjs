@@ -21,7 +21,7 @@ const out = src
   .replace('<!--@sprite-->', () => `<svg width="0" height="0" style="position:absolute" aria-hidden="true">${symbols}</svg>`)
   .replace('/*@calm*/', () => read('calm/calm.js').replaceAll('</script>', '<\\/script>'))   // a comment in calm.js would close the inline tag
   // every assets/<file> reference becomes a data: URI, so the page stays one self-contained file
-  .replace(/assets\/([\w.-]+\.(png|webp|jpg|svg))/g, (_, f, ext) => `data:image/${ext === 'svg' ? 'svg+xml' : ext === 'jpg' ? 'jpeg' : ext};base64,` + readFileSync(join(dir, 'assets', f)).toString('base64'));
+  .replace(/assets\/([\w\/.-]+\.(png|webp|jpg|svg|woff2))/g, (_, f, ext) => `data:${ext === 'woff2' ? 'font/woff2' : 'image/' + (ext === 'svg' ? 'svg+xml' : ext === 'jpg' ? 'jpeg' : ext)};base64,` + readFileSync(join(dir, 'assets', f)).toString('base64'));
 
 // nova.html: the Artifact page (the host adds doctype/head/body); client.html: the same page as a full document for local use
 writeFileSync(join(dir, 'nova.html'), out);
