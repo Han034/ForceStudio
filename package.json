@@ -1,7 +1,7 @@
 {
   "name": "force-studio",
   "productName": "Force Studio",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Force Studio Windows client - download and update our apps",
   "main": "app/main.js",
   "private": true,
@@ -40,7 +40,8 @@
       {
         "provider": "github",
         "owner": "Han034",
-        "repo": "ForceStudio"
+        "repo": "ForceStudio",
+        "releaseType": "release"
       }
     ],
     "win": {
@@ -55,9 +56,9 @@
       "icon": "build/icon.ico"
     },
     "nsis": {
-      "oneClick": false,
+      "oneClick": true,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": true,
+      "runAfterFinish": true,
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
       "createDesktopShortcut": true,
