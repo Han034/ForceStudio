@@ -1100,10 +1100,12 @@ html.is-desktop .win { width: 100%; height: 100%; min-height: 0; border-radius: 
   .cu-rail [data-cu-tip]:hover::after { display: none; }
   .side { grid-template-columns: minmax(0, 1fr); }
   .top .greet { display: none; } .top .cu-search { flex: 1; }
-  .cu-feature { min-height: 250px; margin-top: var(--s-10); align-content: end; }
-  .cu-feature .cu-cutout { height: 62%; top: -44px; bottom: auto; right: 0; }
+  /* feature, stacked: the character on top (in the flow, centred, rising out of the card), the content under it */
+  .cu-feature { min-height: auto;   /* not 0: in the scrolling grid a 0 minimum lets the row collapse */ margin-top: var(--s-10); padding-top: 0; align-content: start; --bg-end: 0%; }
+  .cu-feature::before { border-radius: var(--r-lg); }
+  .cu-feature .cu-cutout { position: relative; right: auto; bottom: auto; justify-self: center; height: 220px; width: auto; max-width: 100%; margin: -44px 0 var(--s-2); clip-path: none; object-position: bottom center;
+    -webkit-mask-image: linear-gradient(#000 84%, transparent); mask-image: linear-gradient(#000 84%, transparent); }   /* a base cut straight by the picture's edge melts into the card */
   .cu-feature > :not(.cu-cutout) { max-width: 100%; }
-  .cu-feature { --bg-end: 0%; }
   .cu-feature > .fdots { top: auto; bottom: var(--s-4); right: var(--s-5); }   /* the character fills the top right here: the bars go under it, level with the buttons */
   .shelf { --th: min(62vw, 240px); margin-inline: calc(var(--s-4) * -1); } .tiles { padding-inline: var(--s-4); scroll-padding-inline: var(--s-4); } .shelf-next { display: none; }
   .dlc { grid-template-columns: 52px minmax(0, 1fr) auto; gap: var(--s-3); } .dlc .dtile { width: 52px; height: 52px; } .dlc .tm { display: none; } .dlc .nm b { font-size: 16px; }
