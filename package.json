@@ -1,7 +1,7 @@
 {
   "name": "force-studio",
   "productName": "Force Studio",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Force Studio Windows client - download and update our apps",
   "main": "app/main.js",
   "private": true,

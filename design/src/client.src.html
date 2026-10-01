@@ -15,6 +15,14 @@
 <style>
 /*@css*/
 
+/* QR dialog */
+.qr-dlg { text-align: center; }
+.qr-dlg form { display: grid; justify-items: center; gap: var(--s-3); }
+.qr-box { width: 224px; height: 224px; padding: 12px; box-sizing: border-box; border-radius: var(--r-lg); background: #fff; margin: var(--s-2) 0; }
+.qr-box svg { width: 100%; height: 100%; display: block; }
+.qr-link { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
+.cu-dialog .cu-actions { justify-content: center; }
+
 /* ================= Force Studio client (Windows) - built only from calm-ui tokens ================= */
 :root { color-scheme: dark; }
 html, body { height: 100%; }
@@ -444,7 +452,7 @@ html.is-desktop .win { width: 100%; height: 100%; min-height: 0; border-radius: 
       <div class="page is-wide">
         <header class="cu-pagehead"><div><h1 class="cu-title">Kütüphane</h1><span class="cu-meta" id="libMeta"></span></div>
           <div class="cu-seg" role="group" aria-label="Filtre" id="libSeg">
-            <button type="button" aria-pressed="true" data-f="all">Tümü</button><button type="button" aria-pressed="false" data-f="inst">Kurulu</button><button type="button" aria-pressed="false" data-f="upd">Güncelleme</button>
+            <button type="button" aria-pressed="true" data-f="all">Tümü</button><button type="button" aria-pressed="false" data-f="play">Google Play</button><button type="button" aria-pressed="false" data-f="web">Web</button>
           </div>
         </header>
         <div class="cu-more" id="libMore"></div>
@@ -535,48 +543,50 @@ html.is-desktop .win { width: 100%; height: 100%; min-height: 0; border-radius: 
   </div>
 </div>
 
+<dialog class="cu-dialog qr-dlg" id="qrDlg" aria-labelledby="qrTitle">
+  <form method="dialog">
+    <h2 class="cu-title" id="qrTitle"></h2>
+    <span class="cu-meta">Telefonunla okut, Google Play’de açılsın</span>
+    <div class="qr-box" id="qrBox"></div>
+    <a class="qr-link cu-meta" id="qrLink" href="#" target="_blank" rel="noopener"></a>
+    <div class="cu-actions"><button class="cu-btn is-quiet" value="close" autofocus>Kapat</button><button type="button" class="cu-btn" id="qrOpen">Tarayıcıda aç</button></div>
+  </form>
+</dialog>
+
 <div class="cu-toast" role="status" id="toast" hidden></div>
 
 <script>
 /*@calm*/
 </script>
 <script>
+/*@qr*/
+</script>
+<script>
 (() => {
   // ---------------- data (mock - replaced by the update server's manifest) ----------------
   const apps = [
-    // our own apps (images: design/assets/app-*.webp, bg = the artwork's ground, ink = title colour on it)
-    { id: 'lfg',       name: 'LFG', desc: 'Looking For Game',  img: 'assets/app-lfg.webp', ico: 'assets/app-lfg-c.webp',       bg: '#090a0e', ink: '#f7f1f3', icon: 'i-users',       art: 4, v: '1.0.0', mb: 240, used: 'Az önce',   hrs: 120 },
-    { id: 'algo',      name: 'The Algorithm Card Game',       img: 'assets/app-algo.webp', ico: 'assets/app-algo-c.webp',      bg: '#000000', ink: '#f7f1f3', icon: 'i-layers',      art: 2, v: '1.2.0', mb: 410, used: '1 sa önce', hrs: 96 },
-    { id: 'doshub',    name: 'Doshub',                        img: 'assets/app-doshub.webp', ico: 'assets/app-doshub-c.webp',    bg: '#fdfdfd', ink: '#17161a', icon: 'i-users',       art: 5, v: '2.0.3', mb: 180, used: 'Dün',       hrs: 64 },
-    { id: 'walletbud', name: 'WalletBud',                     img: 'assets/app-walletbud.webp', ico: 'assets/app-walletbud-c.webp', bg: '#fcfcfa', ink: '#17161a', icon: 'i-wallet',      art: 3, v: '1.4.1', mb: 95,  used: 'Dün',       hrs: 48 },
-    { id: 'market',    name: 'MiniMarket Sim',                img: 'assets/app-market.webp', ico: 'assets/app-market-c.webp',    bg: '#fcfcfa', ink: '#17161a', icon: 'i-store',       art: 6, v: '0.9.8', mb: 820, used: '2 gün önce', hrs: 150 },
-    { id: 'kilibik',   name: 'Kılıbık',                       img: 'assets/app-kilibik.webp', ico: 'assets/app-kilibik-c.webp',   bg: '#fc5629', ink: '#17161a', icon: 'i-sparkle',     art: 1, v: '1.0.2', mb: 130, used: '3 gün önce', hrs: 30 },
-    // sample apps
-    { id: 'forge',  name: 'A Lone', icon: 'i-palette',        art: 1, v: '3.1.0', next: '3.2.0', mb: 1840, used: '2 dk önce', run: false, hrs: 540 },
-    { id: 'deck',   name: 'Sound Deck',  icon: 'i-music',          art: 2, v: '2.4.1', mb: 960,  used: 'Açık',     run: true, hrs: 420 },
-    { id: 'trail',  name: 'Sky Card',    icon: 'i-map',            art: 3, v: '1.8.0', next: '1.9.2', mb: 1420, used: 'Dün', hrs: 96 },
-    { id: 'snap',   name: 'Snap Studio', icon: 'i-camera',         art: 4, v: '5.2.0', next: '5.3.0', mb: 3100, used: '3 gün önce', hrs: 210 },
-    { id: 'ledger', name: 'Ledger',      icon: 'i-wallet',         art: 6, v: '4.0.2', mb: 580,  used: '1 hafta önce', hrs: 60 },
-    { id: 'code',   name: 'Code Pad',    icon: 'i-code',           art: 2, v: '1.2.0', mb: 2120, used: '2 hafta önce', hrs: 324 },
-    { id: 'pulse',  name: 'Pulse',       icon: 'i-activity',       art: 5, v: '2.0.1', mb: 440,  used: '3 hafta önce', hrs: 38 },
-    { id: 'chat',   name: 'Chat Room',   icon: 'i-message-circle', art: 1, v: '3.3.0', mb: 1200, used: '1 ay önce', hrs: 150 },
-    { id: 'note',   name: 'Notebook',    icon: 'i-notebook-pen',   art: 3, v: '1.0.4', mb: 360,  used: '1 ay önce', hrs: 22 },
-    { id: 'arena',  name: 'Arena',       icon: 'i-gamepad-2',      art: 6, v: null, next: '1.0.0', mb: 14800 },
-    { id: 'sky',    name: 'Skycast',     icon: 'i-cloud-sun',      art: 5, v: null, next: '2.1.0', mb: 640 },
-    { id: 'fit',    name: 'Fit Log',     icon: 'i-dumbbell',       art: 4, v: null, next: '1.5.0', mb: 880 },
+    // kind: 'play' = Google Play (card shows a QR code) · 'web' = opens the site · 'soon' = no link yet
+    // images: design/assets/app-*.webp, bg = the artwork's ground, ink = title colour on it; apps without art get an icon tile
+    { id: 'algo',      name: 'The Algorithm', desc: 'Kart oyunu',     img: 'assets/app-algo.webp', ico: 'assets/app-algo-c.webp',      bg: '#000000', ink: '#f7f1f3', icon: 'i-layers',      art: 2, kind: 'play', url: 'https://play.google.com/store/apps/details?id=com.thealgorithm.app' },
+    { id: 'lfg',       name: 'LFG', desc: 'Looking For Group',        img: 'assets/app-lfg.webp', ico: 'assets/app-lfg-c.webp',        bg: '#090a0e', ink: '#f7f1f3', icon: 'i-users',       art: 4, kind: 'play', url: 'https://play.google.com/store/apps/details?id=com.lfg.lookingforgroup' },
+    { id: 'alone',     name: 'A Lone Farm Game', desc: 'Çiftlik oyunu',                                                                                 icon: 'i-leaf',        art: 3, kind: 'web',  url: 'https://alone-7896f.web.app/' },
+    { id: 'screenpet', name: 'Screen Pet',   desc: 'Ekran evcil hayvanı',                                                                             icon: 'i-paw-print',   art: 5, kind: 'soon' },
+    { id: 'thetime',   name: 'The Time',     desc: 'Zaman',                                                                                            icon: 'i-clock',       art: 6, kind: 'web',  url: 'https://thetime-313d0.web.app/' },
+    { id: 'nodefac',   name: 'Nodefac',      desc: 'Fabrika oyunu',                                                                                    icon: 'i-git-branch',  art: 2, kind: 'soon' },
+    { id: 'doshub',    name: 'Doshub', desc: 'Spor arkadaşı',        img: 'assets/app-doshub.webp', ico: 'assets/app-doshub-c.webp',    bg: '#fdfdfd', ink: '#17161a', icon: 'i-users',       art: 5, kind: 'play', url: 'https://play.google.com/store/apps/details?id=com.dosHub.sporbuddy' },
+    { id: 'skycard',   name: 'Skycard',      desc: 'Kart oyunu',                                                                                       icon: 'i-star',        art: 1, kind: 'soon' },
+    { id: 'walletbud', name: 'WalletBud', desc: 'Bütçe arkadaşı',    img: 'assets/app-walletbud.webp', ico: 'assets/app-walletbud-c.webp', bg: '#fcfcfa', ink: '#17161a', icon: 'i-wallet',      art: 3, kind: 'play', url: 'https://play.google.com/store/apps/details?id=com.walletbud.app' },
+    { id: 'market',    name: 'Minimarket Sim', desc: 'Market simülasyonu', img: 'assets/app-market.webp', ico: 'assets/app-market-c.webp',  bg: '#fcfcfa', ink: '#17161a', icon: 'i-store',       art: 6, kind: 'play', url: 'https://play.google.com/store/apps/details?id=com.minimarket.app' },
+    { id: 'kilibik',   name: 'Kılıbık', desc: 'Oyun',                img: 'assets/app-kilibik.webp', ico: 'assets/app-kilibik-c.webp',   bg: '#fc5629', ink: '#17161a', icon: 'i-sparkle',     art: 1, kind: 'soon' },
   ];
   const byId = Object.fromEntries(apps.map(a => [a.id, a]));
-  const queue = [{ id: 'arena', p: 64, paused: false, speed: 24.6 }];   // active downloads
-  const history = [
-    { t: 'Ledger 4.0.2 kuruldu', m: 'Dün' },
-    { t: 'Code Pad 1.2.0 kuruldu', m: '3 gün önce' },
-    { t: 'Pulse 2.0.1 kuruldu', m: '1 hafta önce' },
-  ];
+  const queue = [];   // active downloads (the installer arrives later)
+  const history = [];
   const me = { name: 'Mehmet', ini: 'M', st: 'on' };
   const ST = { on: 'Çevrimiçi', away: 'Uzakta', off: 'Görünmez' };
   const friends = [
-    { name: 'Zeynep', st: 'on', now: 'Arena oynuyor', art: 3 },
-    { name: 'Can', st: 'on', now: 'A Lone', art: 1 },
+    { name: 'Zeynep', st: 'on', now: 'LFG', art: 3 },
+    { name: 'Can', st: 'on', now: 'A Lone Farm Game', art: 1 },
     { name: 'Elif', st: 'away', now: 'Uzakta', art: 5 },
     { name: 'Burak', st: 'on', now: 'Çevrimiçi', art: 6 },
     { name: 'Deniz', st: 'off', now: '2 sa önce', art: 2 },
@@ -590,10 +600,10 @@ html.is-desktop .win { width: 100%; height: 100%; min-height: 0; border-radius: 
   ];
   // sample conversations (mock)
   const convo = {
-    Zeynep: [['t', 'Arena 1.0 çıkınca haber ver'], ['me', 'İndiriyorum, %60 oldu'], ['t', 'Süper, akşam bir maç?']],
-    Can: [['t', 'A Lone 3.2’de katmanlar düzelmiş mi?'], ['me', 'Güncelleme notlarında var, şimdi deniyorum']],
+    Zeynep: [['t', 'LFG’ye yeni sürüm çıkınca haber ver'], ['me', 'Tamam, bakıyorum'], ['t', 'Süper, akşam bir oyun?']],
+    Can: [['t', 'A Lone Farm Game’de yeni bölüm var mı?'], ['me', 'Var, şimdi deniyorum']],
     Elif: [['t', 'Tasarım dosyalarını gruba attım']],
-    Burak: [['me', 'Sky Card’ta yeni sezon geldi mi?'], ['t', 'Evet, 1.9’da geldi']],
+    Burak: [['me', 'Skycard’da yeni sezon geldi mi?'], ['t', 'Evet, geldi']],
     Deniz: [['t', 'Yarın beta test var, unutma']],
     Selin: [], Kaan: [],
     'Beta test': [['Can', 'Build 214 yüklendi'], ['Elif', 'Giriş ekranında küçük bir kayma var'], ['me', 'Bakıyorum']],
@@ -602,10 +612,8 @@ html.is-desktop .win { width: 100%; height: 100%; min-height: 0; border-radius: 
   };
   const replies = ['Tamam 👍', 'Anladım, bakarım', 'Olur, sonra konuşalım', 'Harika!'];
   const notifs = [
-    { icon: 'i-refresh-cw', t: 'A Lone 3.2.0 hazır', m: '2 dk önce', unread: true, open: () => go('library') },
-    { icon: 'i-message-circle', t: 'Zeynep: Süper, akşam bir maç?', m: '5 dk önce', unread: true, open: () => openChat('Zeynep') },
+    { icon: 'i-message-circle', t: 'Zeynep: Süper, akşam bir oyun?', m: '5 dk önce', unread: true, open: () => openChat('Zeynep') },
     { icon: 'i-users', t: 'Arena klan: 12 yeni mesaj', m: '1 sa önce', unread: true, open: () => openChat('Arena klan') },
-    { icon: 'i-circle-check', t: 'Ledger 4.0.2 kuruldu', m: 'Dün', unread: false, open: () => go('library') },
   ];
   const DISK = 256 * 1024, FREE_OTHER = 148 * 1024;   // MB; mock C: drive
 
@@ -631,15 +639,26 @@ html.is-desktop .win { width: 100%; height: 100%; min-height: 0; border-radius: 
   // ---------------- actions ----------------
   const start = id => { if (!inQ(id)) queue.push({ id, p: 0, paused: false, speed: 0 }); render(); };
   const launch = id => { apps.forEach(a => { if (a.id === id) a.run = true; }); byId[id].used = 'Açık'; toast(`${byId[id].name} açılıyor`); render(); };
+  const showQR = a => {
+    const q = qrcode(0, 'M'); q.addData(a.url); q.make();
+    $('#qrTitle').textContent = a.name;
+    $('#qrBox').innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+    $('#qrLink').textContent = a.url; $('#qrLink').href = a.url;
+    $('#qrOpen').onclick = () => window.open(a.url, '_blank');
+    $('#qrDlg').showModal();
+  };
+  const openApp = id => {
+    const a = byId[id];
+    if (a.kind === 'play') return showQR(a);
+    if (a.kind === 'web') { window.open(a.url, '_blank'); return; }
+    toast(`${a.name} yakında`);
+  };
   const act = (id) => { const s = state(byId[id]); if (s === 'ok') launch(id); else if (s === 'upd' || s === 'none') start(id); else if (s === 'dl') { const q = inQ(id); q.paused = !q.paused; render(); } };
   const cancel = id => { const i = queue.findIndex(q => q.id === id); if (i < 0) return; const [q] = queue.splice(i, 1); render(); toast(`${byId[id].name} iptal edildi`, { label: 'Geri al', run: () => { queue.splice(i, 0, q); render(); } }); };
 
-  const btnFor = (a, sm = true) => {
-    const s = state(a), q = inQ(a.id);
-    const label = { ok: 'Aç', upd: 'Güncelle', none: 'Yükle', dl: q && q.paused ? 'Sürdür' : 'Duraklat' }[s];
-    const quiet = s === 'ok' || s === 'dl';
-    return `<button type="button" class="cu-btn ${sm ? 'is-sm' : ''} ${quiet ? 'is-quiet' : ''}" data-act="${a.id}">${label}</button>`;
-  };
+  const KIND = { play: ['Google Play', 'QR kod'], web: ['Web', 'Aç'], soon: ['Yakında', 'Yakında'] };
+  const btnFor = (a, sm = true) => `<button type="button" class="cu-btn ${sm ? 'is-sm' : ''} ${a.kind === 'soon' ? 'is-quiet' : ''}" data-app="${a.id}">${KIND[a.kind][1]}</button>`;
+
 
   // ---------------- render ----------------
   function render() {
@@ -653,17 +672,15 @@ html.is-desktop .win { width: 100%; height: 100%; min-height: 0; border-radius: 
     const f = byId[FEAT[featIdx]], fs = state(f), fq = inQ(f.id);
     setHTML($('#fdots'), FEAT.map((id, i) => `<button type="button" role="tab" data-feat="${i}" aria-selected="${i === featIdx}" aria-label="${byId[id].name}"></button>`).join(''));
     setHTML($('#fbody'), `
-      <span class="cu-chip is-inverse">${fs === 'upd' ? 'Yeni sürüm' : fs === 'dl' ? 'İndiriliyor' : 'Öne çıkan'}</span>
+      <span class="cu-chip is-inverse">Öne çıkan</span>
       <h2 class="hero-t">${f.name}</h2>
-      <div class="row"><span class="cu-meta">${f.next && fs !== 'ok' ? `${f.v} → <b style="color:var(--c-ink)">${f.next}</b>` : (f.desc ? f.desc + ' · ' : '') + f.v} · ${gb(f.mb)}</span></div>
-      ${fq ? `<div class="cu-progress" style="width:220px"><i style="--v:${fq.p}%"></i></div>` : ''}
-      <div class="cu-actions">${btnFor(f, false)}<button type="button" class="cu-btn is-ghost" data-notes="${f.id}">Sürüm notları</button></div>`);
+      <div class="row"><span class="cu-meta">${f.desc} · ${KIND[f.kind][0]}</span></div>
+      <div class="cu-actions">${btnFor(f, false)}</div>`);
 
     // my apps shelf: installed apps, last used first
-    setHTML($('#tiles'), inst.map((a, i) => `
-      <button type="button" class="tile art-${a.art} ${a.img ? 'has-img' : ''}" ${a.img ? `style="--tile-bg:${a.bg};--tile-ink:${a.ink}"` : ''} data-act="${a.id}" aria-label="${a.name} ${state(a) === 'ok' ? 'aç' : 'güncelle'}">
+    setHTML($('#tiles'), apps.map((a, i) => `
+      <button type="button" class="tile art-${a.art} ${a.img ? 'has-img' : ''}" ${a.img ? `style="--tile-bg:${a.bg};--tile-ink:${a.ink}"` : ''} data-app="${a.id}" aria-label="${a.name}: ${KIND[a.kind][1]}">
         ${a.img ? `<img class="tphoto" src="${a.img}" alt="">` : tileArt(i) + ic(a.icon, 'hero')}
-        ${a.run ? '<span class="cu-dot is-pos">Açık</span>' : state(a) === 'upd' ? '<span class="cu-dot is-warn">Güncelleme</span>' : ''}
         <span class="tt">${a.name}</span>
       </button>`).join(''));
     shelf();
@@ -676,7 +693,7 @@ html.is-desktop .win { width: 100%; height: 100%; min-height: 0; border-radius: 
     $('#updList').innerHTML = (upd.length ? upd.slice(0, 3).map(a => `
       <div class="ucard"><div class="cu-row"><span class="cu-ico art-${a.art}">${appIco(a)}</span>
         <div><b>${a.name}</b><span class="cu-meta vv">${a.v} → ${a.next}</span></div>${btnFor(a)}</div></div>`).join('')
-      : `<div class="ucard"><div class="cu-row"><span class="cu-ico art-5">${ic('i-check')}</span><div><b>Hepsi güncel</b><span class="cu-meta">${fresh.length} uygulama</span></div><span></span></div></div>`)
+      : `<div class="ucard"><div class="cu-row"><span class="cu-ico art-5">${ic('i-check')}</span><div><b>Hepsi güncel</b><span class="cu-meta">${apps.length} uygulama</span></div><span></span></div></div>`)
       + (upd.length > 3 ? `<button class="cu-morebtn" type="button" data-view="library" style="margin:0;justify-self:start">${upd.length - 3} daha</button>` : '');
 
     // statistic: total hours + top three
@@ -688,15 +705,15 @@ html.is-desktop .win { width: 100%; height: 100%; min-height: 0; border-radius: 
 
     // library
     const f2 = $('#libSeg [aria-pressed="true"]').dataset.f, term = $('#q').value.trim().toLowerCase();
-    const libApps = apps.filter(a => (f2 === 'all' || (f2 === 'inst' ? a.v : state(a) === 'upd')) && (!term || (a.name + ' ' + (a.desc || '')).toLowerCase().includes(term)));
+    const libApps = apps.filter(a => (f2 === 'all' || a.kind === f2) && (!term || (a.name + ' ' + (a.desc || '')).toLowerCase().includes(term)));
     const open = $('#libMore').classList.contains('is-open');
     $('#libMeta').textContent = `${libApps.length} uygulama`;
     $('#libMore').innerHTML = `<div class="lgrid">${libApps.map((a, i) => { const st = state(a), q = inQ(a.id); return `
-      <article class="lcard ${i >= 10 ? 'cu-extra' : ''}">
+      <article class="lcard ${i >= 10 ? 'cu-extra' : ''}" data-app="${a.id}" style="cursor:pointer">
         <div class="art art-${a.art} ${a.img ? 'has-img' : ''}" ${a.img ? `style="--tile-bg:${a.bg};--tile-ink:${a.ink}"` : ''}>${a.img ? appIco(a, 'contain') : ic(a.icon, 'glyph') + `<span class="ic">${ic(a.icon)}</span>`}
-          ${{ ok: a.run ? '<span class="cu-dot is-pos">Açık</span>' : '', upd: '<span class="cu-dot is-warn">Güncelleme</span>', none: '', dl: '<span class="cu-dot is-pos">İndiriliyor</span>' }[st]}</div>
-        <div class="bd"><b>${a.name}</b><span class="cu-meta">${a.desc ? a.desc + ' · ' : ''}${st === 'upd' ? `${a.v} → ${a.next}` : a.v || a.next} · ${gb(a.mb)}</span></div>
-        <div class="ft">${q ? `<div class="cu-progress"><i style="--v:${q.p}%"></i></div>` : `<span class="cu-meta">${st === 'none' ? 'Yüklü değil' : a.used || ''}</span>`}${btnFor(a)}</div>
+</div>
+        <div class="bd"><b>${a.name}</b><span class="cu-meta">${a.desc} · ${KIND[a.kind][0]}</span></div>
+        <div class="ft">${q ? `<div class="cu-progress"><i style="--v:${q.p}%"></i></div>` : '<span class="cu-meta"></span>'}${btnFor(a)}</div>
       </article>`; }).join('')}</div>` +
       (libApps.length > 10 ? `<button class="cu-morebtn" type="button" aria-expanded="${open}"><span class="cu-m">${libApps.length - 10} daha</span><span class="cu-l">Daha az</span></button>` : '');
 
@@ -918,7 +935,7 @@ html.is-desktop .win { width: 100%; height: 100%; min-height: 0; border-radius: 
     lfg: { src: 'assets/feature-lfg.webp', w: 431, h: 640, edge: .5, ov: 130,
       R: [.622, .687, .715, .74, .768, .78, .787, .794, .8, .807, .814, .814, .798, .814, .814, .81, .807, .812, .812, .81, .81, .807, .805, .798, .791, .784, .745, .696, .712, .719, .719, .719] },
   };
-  const FEAT_ART = { trail: 'fox', lfg: 'lfg' };   // app id → art; the rest use the robot
+  const FEAT_ART = { alone: 'fox', lfg: 'lfg' };   // app id → art; the rest use the robot
   const artOf = id => ARTS[FEAT_ART[id] || 'robot'];
   const curArt = () => artOf(FEAT[featIdx]);
   function placeFeatureBg() {
@@ -955,7 +972,7 @@ html.is-desktop .win { width: 100%; height: 100%; min-height: 0; border-radius: 
   }
 
   // feature carousel: fixed list, next one when the active bar has filled (paused on hover; no auto-advance with reduced motion)
-  const FEAT = [...apps.filter(a => state(a) === 'upd').slice(0, 2).map(a => a.id), 'lfg'];
+  const FEAT = ['lfg', 'alone', 'algo'];
   let featIdx = 0, featBusy = false;
   function featShow(i) {   // no animation: first paint, deep links
     const img = $('#feature .cu-cutout'), A = artOf(FEAT[i]);
@@ -1024,6 +1041,7 @@ html.is-desktop .win { width: 100%; height: 100%; min-height: 0; border-radius: 
     if (e.target.closest('#shelfNext')) { const t = $('#tiles'); $('#shelfNext').dataset.end === 'true' ? t.scrollTo({ left: 0 }) : t.scrollBy({ left: t.firstElementChild.offsetWidth + 16 }); return; }
     const pk = e.target.closest('.tile.is-peek'); if (pk) { pk.scrollIntoView({ inline: 'end', block: 'nearest' }); return; }   // a faded card first slides in
     const fd = e.target.closest('[data-feat]'); if (fd) { featGo(+fd.dataset.feat); return; }
+    const ap = e.target.closest('[data-app]'); if (ap) { openApp(ap.dataset.app); return; }
     const a = e.target.closest('[data-act]'); if (a) { act(a.dataset.act); return; }
     const c = e.target.closest('[data-cancel]'); if (c) { cancel(c.dataset.cancel); return; }
     const n = e.target.closest('[data-notes]'); if (n) { toast(`${byId[n.dataset.notes].name} · 4 düzeltme, 2 yenilik`); return; }
