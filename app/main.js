@@ -32,6 +32,8 @@ function createWindow() {
   });
 }
 
+ipcMain.on('version', e => { e.returnValue = app.getVersion(); });
+
 ipcMain.on('win', (e, action) => {
   const win = BrowserWindow.fromWebContents(e.sender);
   if (!win) return;

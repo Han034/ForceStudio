@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('forceStudio', {
   min: () => ipcRenderer.send('win', 'min'),
   max: () => ipcRenderer.send('win', 'max'),
   close: () => ipcRenderer.send('win', 'close'),
+  version: ipcRenderer.sendSync('version'),
 });
 
 window.addEventListener('DOMContentLoaded', () => document.documentElement.classList.add('is-desktop'));
