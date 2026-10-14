@@ -11,6 +11,8 @@ Her filmin sayfasındaki **Export** ile MP4 indirilebilir. Linkler özeldir; ba�
 | Tek Çekim | 9:16 | Müzikli, kesmesiz tek kamera | https://claude.ai/artifact/CvChNFfoBtv63oz9rJkuxc |
 | Dev Arayüz | 9:16 | Müzikli, dev boyutta arayüz dünyası | https://claude.ai/artifact/9XCeD8otm1sDDqLKm3GitZ |
 | Bildirim Yağmuru | 9:16 | Müzikli, bildirimlerle anlatım | https://claude.ai/artifact/RBznFvpQ8p2BXhL29FMxQS |
+| Kartpostal Kolajı | 9:16 | Müzikli, polaroid / damga / bant kolajı | https://claude.ai/artifact/7r7i4r6755xjkNU2HCjWZ5 |
+| Tek Dokunuşun Yolculuğu | 9:16 | Müzikli, bir dokunuşun ışık olup sonuca dönüşmesi | https://claude.ai/artifact/KDpNyLgjrK5sCuS8Ubag7P |
 
 Tüm filmler 15 saniyedir.
 
